@@ -130,14 +130,6 @@
         <updatePolicy>daily</updatePolicy>
       </snapshots>
     </repository>
-    <repository>
-      <id>nexus.snapshot</id>
-      <name>Nexus maven snapshot repository</name>
-      <url>http://scala-tools.org/repo-snapshots</url>
-      <!-- <snapshots>
-        <updatePolicy>daily</updatePolicy>
-      </snapshots> -->
-    </repository>
   </repositories>
   <pluginRepositories>
     <pluginRepository>

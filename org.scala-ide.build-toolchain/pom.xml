@@ -86,14 +86,6 @@
             <updatePolicy>daily</updatePolicy>
           </snapshots>
         </repository>
-        <repository>
-          <id>nexus.snapshot</id>
-          <name>Nexus maven snapshot repository</name>
-          <url>http://lampmac13.epfl.ch:8080/nexus-webapp-1.9.2.3/content/repositories/snapshots/</url>
-          <!-- <snapshots>
-            <updatePolicy>daily</updatePolicy>
-          </snapshots> -->
-        </repository>
       </repositories>
     </profile>
 
