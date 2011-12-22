@@ -23,7 +23,7 @@ public privileged aspect ScalaOverrideLabelAspect {
   int around(IMethod method) throws JavaModelException : getOverrideIndicators(method) {
     if (method instanceof IMethodOverrideInfo) {
       return ((IMethodOverrideInfo)method).getOverrideInfo();
-    } 
+    }
     else
       return proceed(method);
   }

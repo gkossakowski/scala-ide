@@ -26,21 +26,21 @@ import scala.tools.refactoring.implementations.{OrganizeImports, AddImportStatem
 
 /**
  * The Scala implemention of Organize Imports.
- * 
- * Organize Imports can work in two different modes, depending on whether there are 
+ *
+ * Organize Imports can work in two different modes, depending on whether there are
  * errors in the source file:
- * 
+ *
  *  - With no errors, the refactoring simply calls the Refactoring Library's Organize Imports with the users' configuration settings.
  *  - When there are errors, specifically missing types, Organize Imports uses a SearchEngine to find the missing types to import. If
  *    there are ambiguities, the user is prompted to select the correct import.
- *  
+ *
  */
 class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
 
   def createRefactoring(selectionStart: Int, selectionEnd: Int, file: ScalaSourceFile) = new OrganizeImportsScalaIdeRefactoring(file)
-  
+
   override def run(action: IAction) {
-    
+
     /**
      * Returns an array of all the types that are missing in the source file.
      */
@@ -54,12 +54,12 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
         case valueNotFoundError(name) => name
       } distinct
     }
- 
+
     /**
-     * Uses a SearchEngine to find all possible types that match the missing type's names. 
-     * Only types that are visible are returned, types that are inner classes of other 
+     * Uses a SearchEngine to find all possible types that match the missing type's names.
+     * Only types that are visible are returned, types that are inner classes of other
      * classes are filtered because they cannot be imported at the top level.
-     * 
+     *
      * @return Groups of types that are candidates for a missing type.
      */
     def findSuggestionsForMissingTypes(missingTypes: Array[String], file: ScalaSourceFile, pm: IProgressMonitor): Iterable[Array[TypeNameMatch]] = {
@@ -67,12 +67,12 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
       val scope = SearchEngine.createJavaSearchScope(Array[IJavaElement](file.getJavaProject))
       val typesToSearch =  missingTypes map (_.toArray)
       new SearchEngine().searchAllTypeNames(null, typesToSearch, scope, new TypeNameMatchCollector(resultCollector), IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, pm)
-      val allFoundTypes = resultCollector.toArray[TypeNameMatch](Array[TypeNameMatch]()) 
+      val allFoundTypes = resultCollector.toArray[TypeNameMatch](Array[TypeNameMatch]())
       val visibleTypes = allFoundTypes filter { typeNameMatch =>
         typeNameMatch.getType match {
-          case se: ScalaElement => se.isVisible 
-          case tpe => 
-            // if it's not a ScalaElement, it could still be an inner class, 
+          case se: ScalaElement => se.isVisible
+          case tpe =>
+            // if it's not a ScalaElement, it could still be an inner class,
             // and we cannot import them at the top level. TODO: Is this check enough?
             tpe.getParent match {
               case _: LazyToplevelClass => false // Could the parent be an object?
@@ -82,7 +82,7 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
       }
       visibleTypes groupBy (_.getSimpleTypeName) values
     }
-    
+
     /**
      * Checks if all the problems in the compilation unit have been fixed. If there's no editor,
      * true is returned as well to signal that no further processing needs to be attempted.
@@ -92,26 +92,26 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
         Option(file.getProblems).map(_.isEmpty) getOrElse true
       } getOrElse true // no editor? then we are in trouble and can abort anyway
     }
-    
+
     /**
      * Adds the imports to current editor's source file. This needs the current
      * editor and source file, we it has to be run in the UI thread. The user's
      * selection will be retained if that's possible.
-     * 
+     *
      * This uses the refactoring library's AddImportStatement refactoring.
      */
     def addImports(imports: Iterable[TypeNameMatch], pm: IProgressMonitor) {
-      
+
       /**
        * Creates the change objects that are needed to add the imports to the source file.
-       * 
+       *
        * @return A list of changes or an empty list if the source file cannot be obtained.
        */
       def createChanges(scalaSourceFile: ScalaSourceFile, imports: Iterable[TypeNameMatch], pm: IProgressMonitor) = {
         scalaSourceFile.withSourceFile { (sourceFile, compiler) =>
-          val refactoring = new AddImportStatement { 
-            val global = compiler 
-            // The editor has not necessarily been saved, so we need to make 
+          val refactoring = new AddImportStatement {
+            val global = compiler
+            // The editor has not necessarily been saved, so we need to make
             // sure the refactoring gets the correct content of the document.
             override def getContentForFile(file: AbstractFile): Array[Char] = {
               sourceFile.content
@@ -120,11 +120,11 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
           refactoring.addImports(scalaSourceFile.file, imports map (_.getFullyQualifiedName))
         }(Nil)
       }
-      
+
       EditorHelpers.withCurrentEditor { editor =>
-        
-        pm.subTask("Waiting for the compiler to finish..")    
-        
+
+        pm.subTask("Waiting for the compiler to finish..")
+
         EditorHelpers.withScalaFileAndSelection { (scalaSourceFile, textSelection) =>
           pm.subTask("Applying the changes.")
           val changes = createChanges(scalaSourceFile, imports, pm)
@@ -137,7 +137,7 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
 
     /**
      * Asks the user to choose between ambiguous missing types, using the same machinery as the JDT.
-     * 
+     *
      * It also updates the QualifiedTypeNameHistory for the chosen types so they will be preferred in
      * subsequent runs.
      */
@@ -150,10 +150,10 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
           setMessage(ActionMessages.OrganizeImportsAction_selectiondialog_message)
         }
       }
-      
+
       typeSearchDialog.setElements(missingTypes map (_.map (_.asInstanceOf[Object])))
       typeSearchDialog.setComparator(new TypeSearchComparator)
-        
+
       if (missingTypes.size > 0 && typeSearchDialog.open() == Window.OK) {
         Some(typeSearchDialog.getResult map {
           case array: Array[_] if array.length > 0 =>
@@ -167,33 +167,33 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
         None
       }
     }
-    
+
     /**
      * Maps the missing type names to fully qualified names and adds them as imports to the file.
-     * 
+     *
      * If there are still problems remaining after all the imports have been added, the function calls
      * itself until all the missing type errors are gone. At most three passes are performed.
      */
     def addMissingImportsToFile(missingTypes: Array[String], file: ScalaSourceFile, pm: IProgressMonitor) {
-      
+
       pm.subTask("Finding suggestions for the missing types..")
-      
+
       def iterate(missingTypes: Array[String], remainingPasses: Int) {
         findSuggestionsForMissingTypes(missingTypes, file, pm).partition(_.size <= 1) match {
-          case (Nil, Nil) => 
-  
+          case (Nil, Nil) =>
+
           case (uniqueTypes, ambiguousTypos) =>
-            
+
             decideAmbiguousMissingTypes(ambiguousTypos.toArray) match {
-              case Some(missingTypes) => 
+              case Some(missingTypes) =>
                 addImports(uniqueTypes.flatten ++ missingTypes, pm)
-                
+
                 if(!allProblemsFixed && remainingPasses > 0) {
                   // We restart with an updated list of problems, hoping
                   // that some errors have been resolved.
                   iterate(getMissingTypeErrorsFromFile(file), remainingPasses - 1)
                 }
-              case None => 
+              case None =>
                 // the user canceled, so we just add the unique types and stop
                 addImports(uniqueTypes.flatten, pm)
             }
@@ -201,10 +201,10 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
       }
       iterate(missingTypes, 3)
     }
-    
+
     EditorHelpers.withCurrentScalaSourceFile { file =>
       getMissingTypeErrorsFromFile(file) match {
-        case missingTypes if missingTypes.isEmpty => 
+        case missingTypes if missingTypes.isEmpty =>
           // continue with organizing imports
           runRefactoringInUiJob()
         case missingTypes =>
@@ -216,11 +216,11 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
       }
     }
   }
-  
+
   class OrganizeImportsScalaIdeRefactoring(file: ScalaSourceFile) extends ScalaIdeRefactoring("Organize Imports", file, 0, 0) {
-    
+
     lazy val compilationUnitHasProblems = file.getProblems != null && file.getProblems.exists(_.isError)
-                  
+
     val refactoring = withCompiler( c => new OrganizeImports { val global = c })
 
     override def checkInitialConditions(pm: IProgressMonitor) = {
@@ -230,23 +230,23 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
       }
       status
     }
-    
-    def refactoringParameters = { 
-      val options = {    
+
+    def refactoringParameters = {
+      val options = {
         val project = file.getJavaProject.getProject
-        
+
         val expandOrCollapse = getExpandOrCollapseForProject(project) match {
           case ExpandImports => refactoring.ExpandImports
           case CollapseImports => refactoring.CollapseImports
         }
-        
+
         val wildcards = refactoring.AlwaysUseWildcards(getWildcardImportsForProject(project).toSet)
-        
+
         val groups = getGroupsForProject(project).toList
-        
+
         List(expandOrCollapse, wildcards, refactoring.SortImports, refactoring.GroupImports(groups))
       }
-      
+
       val deps = {
         if(compilationUnitHasProblems) {
           // this is safer when there are problems in the compilation unit
@@ -255,11 +255,11 @@ class OrganizeImportsAction extends RefactoringAction with ActionWithNoWizard {
           refactoring.Dependencies.FullyRecompute
         }
       }
-      
+
       new refactoring.RefactoringParameters(options = options, deps = deps)
     }
   }
-    
+
   private class TypeSearchComparator extends Comparator[Object] {
     def compare(o1: Object, o2: Object): Int = o1 match {
       case o1: String if o1 == o2 => 0

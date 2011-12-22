@@ -18,7 +18,7 @@ class ColourPreferenceInitializer extends AbstractPreferenceInitializer {
       {
         val baseName = syntaxClass.baseName
 //        PreferenceConverter.setDefault(preferenceStore, baseName + COLOUR_SUFFIX, rgb)
-        // Removed PreferenceConverter, as it has the side-effect of creating a Display 
+        // Removed PreferenceConverter, as it has the side-effect of creating a Display
         // that breaks headless tests
         preferenceStore.setDefault(baseName + COLOUR_SUFFIX, StringConverter.asString(rgb))
         preferenceStore.setDefault(baseName + BOLD_SUFFIX, bold)

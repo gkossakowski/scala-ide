@@ -17,31 +17,31 @@ import scala.collection.mutable
 
 class ScalaLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	def launch(configuration: ILaunchConfiguration, mode: String, launch: ILaunch, monitor0: IProgressMonitor) {
-		
+
 		val monitor = if (monitor0 == null) new NullProgressMonitor() else monitor0
-		
+
 		monitor.beginTask(configuration.getName() + "...", 3)
 
 		if (monitor.isCanceled())
 			return
-			
+
 		try {
-			monitor.subTask(LaunchingMessages.JavaLocalApplicationLaunchConfigurationDelegate_Verifying_launch_attributes____1) 
-							
+			monitor.subTask(LaunchingMessages.JavaLocalApplicationLaunchConfigurationDelegate_Verifying_launch_attributes____1)
+
 			val mainTypeName = verifyMainTypeName(configuration)
 			val runner = getVMRunner(configuration, mode)
-	
+
 			val workingDir = verifyWorkingDirectory(configuration)
 		  val workingDirName = if (workingDir != null) workingDir.getAbsolutePath() else null
-			
+
 			// Environment variables
 			val envp = getEnvironment(configuration)
-			
+
 			// Program & VM arguments
 			val pgmArgs = getProgramArguments(configuration)
 			val vmArgs = getVMArguments(configuration)
 			val execArgs = new ExecutionArguments(vmArgs, pgmArgs)
-			
+
 			// VM-specific attributes
 			val vmAttributesMap = getVMSpecificAttributesMap(configuration)
 
@@ -53,7 +53,7 @@ class ScalaLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			// Classpath
 			// Add scala libraries that were missed in VM attributes
 			val classpath = (classpath0.toList):::missingScalaLibraries
-			
+
 			// Create VM config
 			val runConfig = new VMRunnerConfiguration(mainTypeName, classpath.toArray)
 			runConfig.setProgramArguments(execArgs.getProgramArgumentsArray())
@@ -61,29 +61,29 @@ class ScalaLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			runConfig.setVMArguments(execArgs.getVMArgumentsArray())
 			runConfig.setWorkingDirectory(workingDirName)
 			runConfig.setVMSpecificAttributesMap(vmAttributesMap)
-	
+
 
 			// Bootpath
 			runConfig.setBootClassPath(getBootpath(configuration))
-			
+
 			// check for cancellation
 			if (monitor.isCanceled())
 				return
-			
+
 			// stop in main
 			prepareStopInMain(configuration)
-			
+
 			// done the verification phase
 			monitor.worked(1)
-			
-			monitor.subTask(LaunchingMessages.JavaLocalApplicationLaunchConfigurationDelegate_Creating_source_locator____2) 
+
+			monitor.subTask(LaunchingMessages.JavaLocalApplicationLaunchConfigurationDelegate_Creating_source_locator____2)
 			// set the default source locator if required
 			setDefaultSourceLocator(launch, configuration)
 			monitor.worked(1)
-			
+
 			// Launch the configuration - 1 unit of work
 			runner.run(runConfig, launch, monitor)
-			
+
 			// check for cancellation
 			if (monitor.isCanceled())
 				return
@@ -92,7 +92,7 @@ class ScalaLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			monitor.done()
 		}
 	}
-	
+
 	private def toInclude(vmMap: mutable.Map[String, Array[String]], classpath: List[String],
 			          configuration: ILaunchConfiguration): List[String] =
 		missingScalaLibraries((vmMap.values.flatten.toList) ::: classpath, configuration)
@@ -109,7 +109,7 @@ class ScalaLaunchDelegate extends AbstractJavaLaunchConfigurationDelegate {
 			  List()
 		}
 	}
-	
+
 	private def resolveClasspath(a: IRuntimeClasspathEntry, configuration: ILaunchConfiguration): List[String] = {
 		val bootEntry = JavaRuntime.resolveRuntimeClasspath(Array(a), configuration)
 		bootEntry.toList.map(_.getLocation())

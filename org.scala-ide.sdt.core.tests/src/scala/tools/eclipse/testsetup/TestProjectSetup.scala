@@ -9,21 +9,21 @@ import scala.tools.eclipse.javaelements.ScalaCompilationUnit
 import org.eclipse.jdt.core.ICompilationUnit
 
 /** Base class for setting up tests that depend on a project found in the test-workspace.
- * 
+ *
  *  Subclass this class with an `object'. The initialization will copy the given project
  *  from test-workspace to the target workspace, and retrieve the 'src/' package root in
  *  `srcPackageRoot'.
- *  
+ *
  *  Reference the object form your test, so that the constructor is called and the project
  *  setup.
- *  
+ *
  *  Example: `object HyperlinkDetectorTests extends TestProjectSetup("hyperlinks")'
- * 
+ *
  */
 class TestProjectSetup(projectName: String) {
   /** The ScalaProject corresponding to projectName, after copying to the test workspace. */
   lazy val project: ScalaProject = SDTTestUtils.setupProject(projectName)
-  
+
   /** The package root corresponding to /src inside the project. */
   lazy val srcPackageRoot: IPackageFragmentRoot = {
     val javaProject = JavaCore.create(project.underlying)
@@ -35,7 +35,7 @@ class TestProjectSetup(projectName: String) {
   assertNotNull(srcPackageRoot)
 
   srcPackageRoot.open(null)
-  
+
   /** Return the compilation unit corresponding to the given path, relative to the src folder.
    *  for example: "scala/collection/Map.scala"
    */
@@ -43,10 +43,10 @@ class TestProjectSetup(projectName: String) {
     val segments = path.split("/")
     srcPackageRoot.getPackageFragment(segments.init.mkString(".")).getCompilationUnit(segments.last)
   }
-  
+
   def scalaCompilationUnit(path: String): ScalaCompilationUnit =
     compilationUnit(path).asInstanceOf[ScalaCompilationUnit]
-  
+
   def reload(unit: ScalaCompilationUnit) {
     // first, 'open' the file by telling the compiler to load it
     project.withSourceFile(unit) { (src, compiler) =>
@@ -55,7 +55,7 @@ class TestProjectSetup(projectName: String) {
       dummy.get
     }()
   }
-  
+
   def findMarker(marker: String) = new {
     import org.eclipse.jdt.internal.compiler.env.ICompilationUnit
     def in(unit: ICompilationUnit): Seq[Int] = {

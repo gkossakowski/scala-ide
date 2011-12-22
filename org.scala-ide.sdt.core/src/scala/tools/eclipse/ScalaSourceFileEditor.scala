@@ -112,7 +112,7 @@ class ScalaSourceFileEditor extends CompilationUnitEditor with ScalaEditor {
     if (documentProvider eq null)
       return
 
-    //  TODO: find out why this code does a cast to IAdaptable before calling getAdapter 
+    //  TODO: find out why this code does a cast to IAdaptable before calling getAdapter
     val adaptable = getEditorInput.asInstanceOf[IAdaptable].getAdapter(classOf[IJavaElement])
     // println("adaptable: " + adaptable.getClass + " : " + adaptable.toString)
 
@@ -130,7 +130,7 @@ class ScalaSourceFileEditor extends CompilationUnitEditor with ScalaEditor {
 
       case _ =>
         // TODO: pop up a dialog explaining what needs to be fixed or fix it ourselves
-        thePlugin checkOrElse (adaptable.asInstanceOf[ScalaSourceFile], // trigger the exception, so as to get a diagnostic stack trace 
+        thePlugin checkOrElse (adaptable.asInstanceOf[ScalaSourceFile], // trigger the exception, so as to get a diagnostic stack trace
           "Could not recompute occurrence annotations: configuration problem")
     }
   }
@@ -210,7 +210,7 @@ class ScalaSourceFileEditor extends CompilationUnitEditor with ScalaEditor {
     super.editorContextMenuAboutToShow(menu)
 
     def groupMenuItemsByGroupId(items: Seq[IContributionItem]) = {
-      // the different groups (as indicated by separators) and 
+      // the different groups (as indicated by separators) and
       // contributions in a menu are originally just a flat list
       items.foldLeft(Nil: List[(String, List[IContributionItem])]) {
 

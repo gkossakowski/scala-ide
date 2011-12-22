@@ -24,19 +24,19 @@ public privileged aspect HoversAspect {
     execution(IRegion AbstractJavaEditorTextHover.getHoverRegion(ITextViewer, int)) &&
     args(textViewer, offset) &&
     target(th);
-  
+
   pointcut appendElementLabel(JavaElementLabelComposer jelc, IJavaElement element, long flags) :
     execution(void JavaElementLabelComposer.appendElementLabel(IJavaElement, long)) &&
     args(element, flags) &&
     target(jelc);
-  
+
   IRegion around(AbstractJavaEditorTextHover th, ITextViewer textViewer, int offset) :
     getHoverRegion(th, textViewer, offset) {
-    ICodeAssist codeAssist = th.getCodeAssist(); 
-  
+    ICodeAssist codeAssist = th.getCodeAssist();
+
     if (!(codeAssist instanceof IScalaCompilationUnit))
       return proceed(th, textViewer, offset);
-    
+
     IScalaCompilationUnit scu = (IScalaCompilationUnit)codeAssist;
     return scu.getScalaWordFinder().findWord(textViewer.getDocument(), offset);
   }
@@ -51,10 +51,10 @@ public privileged aspect HoversAspect {
         jelc.appendPackageFragmentRootLabel(root, JavaElementLabels.ROOT_QUALIFIED);
         jelc.fBuffer.append(JavaElementLabels.CONCAT_STRING);
       }
-      
+
       IScalaElement scalaElement = (IScalaElement)element;
       jelc.fBuffer.append(scalaElement.getLabelText(flags));
-      
+
       if (JavaElementLabelComposer.getFlag(flags, JavaElementLabels.APPEND_ROOT_PATH)) {
         int offset= jelc.fBuffer.length();
         jelc.fBuffer.append(JavaElementLabels.CONCAT_STRING);

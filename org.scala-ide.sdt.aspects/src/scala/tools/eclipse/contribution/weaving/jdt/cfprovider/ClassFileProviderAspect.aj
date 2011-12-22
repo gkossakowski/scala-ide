@@ -67,11 +67,11 @@ import scala.tools.eclipse.contribution.weaving.jdt.IScalaElement;
 @SuppressWarnings("restriction")
 public privileged aspect ClassFileProviderAspect {
 
-  pointcut classFileCreations(PackageFragment parent, String name) : 
+  pointcut classFileCreations(PackageFragment parent, String name) :
     call(protected ClassFile.new(PackageFragment, String)) &&
     within(org.eclipse.jdt..*) &&
     args(parent, name);
-  
+
   pointcut getTypeName(ClassFile cf) :
     execution(public String ClassFile.getTypeName()) &&
     target(cf);
@@ -93,73 +93,73 @@ public privileged aspect ClassFileProviderAspect {
   pointcut getSourceFileName(BinaryType bt) :
     execution(String BinaryType.getSourceFileName(IBinaryType)) &&
     target(bt);
-  
+
   pointcut select(Viewer viewer, Object parentElement, Object element) :
     execution(boolean InnerClassFilesFilter.select(Viewer, Object, Object)) &&
     args(viewer, parentElement, element);
-  
+
   pointcut getChildren(BinaryType bt) :
     execution(IJavaElement[] BinaryType.getChildren()) &&
     target(bt);
-  
-  pointcut getAST(ITypeRoot element, SharedASTProvider.WAIT_FLAG waitFlag, IProgressMonitor progressMonitor) : 
+
+  pointcut getAST(ITypeRoot element, SharedASTProvider.WAIT_FLAG waitFlag, IProgressMonitor progressMonitor) :
     execution(CompilationUnit SharedASTProvider.getAST(ITypeRoot, SharedASTProvider.WAIT_FLAG, IProgressMonitor)) &&
     args(element, waitFlag, progressMonitor);
-  
+
   pointcut resolve(HierarchyResolver hr, IGenericType suppliedType) :
     execution(void HierarchyResolver.resolve(IGenericType)) &&
     target(hr) &&
     args(suppliedType);
-  
+
   pointcut remember(HierarchyResolver hr, IType type, ReferenceBinding typeBinding) :
     execution(void HierarchyResolver.remember(IType, ReferenceBinding)) &&
     target(hr) &&
     args(type, typeBinding);
-  
+
   pointcut acceptType(IType type, int acceptFlags, boolean isSourceType) :
     execution(boolean NameLookup.acceptType(IType, int, boolean)) &&
     args(type, acceptFlags, isSourceType);
-  
+
   pointcut find(SearchableEnvironment se, String typeName, String packageName) :
     execution(NameEnvironmentAnswer find(String, String)) &&
     target(se) &&
     args(typeName, packageName);
-  
+
   pointcut convert(SourceTypeConverter stc, ISourceType[] sourceTypes, CompilationResult compilationResult) :
     execution(CompilationUnitDeclaration SourceTypeConverter.convert(ISourceType[], CompilationResult)) &&
     target(stc) &&
     args(sourceTypes, compilationResult);
-  
+
   pointcut getAncestor(JavaElement je, int ancestorType) :
     execution(IJavaElement JavaElement.getAncestor(int)) &&
     target(je) &&
     args(ancestorType);
-  
+
   pointcut isContainerDirty(TypeNameMatch match) :
     execution(boolean OpenTypeHistory.isContainerDirty(TypeNameMatch)) &&
     args(match);
-  
-  ClassFile around(PackageFragment parent, String name) : 
+
+  ClassFile around(PackageFragment parent, String name) :
     classFileCreations(parent, name) {
 
     ClassFile javaClassFile = proceed(parent, name);
     byte[] bytes;
-    
+
     try {
       bytes = javaClassFile.getBytes();
     } catch(Throwable t) {
-      return javaClassFile; 
+      return javaClassFile;
     }
-    
+
     for (IClassFileProvider provider : ClassFileProviderRegistry.getInstance().getProviders()) {
       ClassFile cf = provider.create(bytes, parent, name);
       if (cf != null)
         return cf;
     }
-    
+
     return javaClassFile;
   }
-  
+
   IBuffer around(ClassFile cf, SourceMapper mapper, IBinaryType info, IClassFile owner) :
     mapSource(cf, mapper, info, owner) {
     return mapSourceSubst(cf, mapper, info);
@@ -193,20 +193,20 @@ public privileged aspect ClassFileProviderAspect {
     } else
       return proceed(cf);
   }
-  
+
   boolean around(Viewer viewer, Object parentElement, Object element) :
     select(viewer, parentElement, element) {
     if (element instanceof IScalaClassFile) {
       IClassFile classFile = (IClassFile) element;
-      String name = classFile.getElementName(); 
+      String name = classFile.getElementName();
       int dollarIndex = name.indexOf('$');
-      return dollarIndex == -1 || dollarIndex == name.length()-7; // Trailing '$' implies object rather than inner class 
+      return dollarIndex == -1 || dollarIndex == name.length()-7; // Trailing '$' implies object rather than inner class
     }
     return proceed(viewer, parentElement, element);
   }
-  
+
   IJavaElement[] around(BinaryType bt) throws JavaModelException :
-    getChildren(bt) && 
+    getChildren(bt) &&
     target(BinaryType) {
     ClassFile cf = (ClassFile)bt.parent;
     if (cf instanceof IScalaClassFile)
@@ -214,7 +214,7 @@ public privileged aspect ClassFileProviderAspect {
     else
       return proceed(bt);
   }
-  
+
   CompilationUnit around(ITypeRoot element, SharedASTProvider.WAIT_FLAG waitFlag, IProgressMonitor progressMonitor) :
     getAST(element, waitFlag, progressMonitor) {
       if (element instanceof IScalaElement)
@@ -222,7 +222,7 @@ public privileged aspect ClassFileProviderAspect {
       else
         return proceed(element, waitFlag, progressMonitor);
   }
-  
+
   void around(HierarchyResolver hr, IGenericType suppliedType) :
     resolve(hr, suppliedType) {
     if (!suppliedType.isBinaryType()) {
@@ -233,10 +233,10 @@ public privileged aspect ClassFileProviderAspect {
         return;
       }
     }
-      
+
     proceed(hr, suppliedType);
   }
-  
+
   void around(HierarchyResolver hr, IType type, ReferenceBinding typeBinding) :
     remember(hr, type, typeBinding) {
     if (((IOpenable)type.getCompilationUnit()).isOpen()) {
@@ -287,28 +287,28 @@ public privileged aspect ClassFileProviderAspect {
       hr.remember(hierarchyType, typeDeclaration.binding);
     }
   }
-  
+
   String around(BinaryType bt) :
     getSourceFileName(bt) {
-    IJavaElement parent = bt.getTypeRoot(); 
+    IJavaElement parent = bt.getTypeRoot();
     if (parent instanceof IScalaClassFile) {
       return ((IScalaClassFile)parent).getSourceFileName();
     }
     else
       return proceed(bt);
   }
-  
+
   boolean around(IType type, int acceptFlags, boolean isSourceType) :
     acceptType(type, acceptFlags, isSourceType) {
     if (!isSourceType && (type instanceof SourceType)) {
-      IJavaElement parent = type.getParent(); 
+      IJavaElement parent = type.getParent();
       if (parent instanceof IScalaClassFile)
         return proceed(type, acceptFlags, true);
     }
-    
+
     return proceed(type, acceptFlags, isSourceType);
   }
-  
+
   CompilationUnitDeclaration around(SourceTypeConverter stc, ISourceType[] sourceTypes, CompilationResult compilationResult) throws JavaModelException :
     convert(stc, sourceTypes, compilationResult) {
     stc.unit = new CompilationUnitDeclaration(stc.problemReporter, compilationResult, 0);
@@ -323,8 +323,8 @@ public privileged aspect ClassFileProviderAspect {
     Object info = ((JavaElement)stc.cu).getElementInfo();
     if (info instanceof CompilationUnitElementInfo)
       cuei = (CompilationUnitElementInfo)info;
-    
-    
+
+
     if (stc.has1_5Compliance && cuei != null && cuei.annotationNumber > 10) { // experimental value
       // if more than 10 annotations, diet parse as this is faster
       return new Parser(stc.problemReporter, true).dietParse(stc.cu, compilationResult);
@@ -373,7 +373,7 @@ public privileged aspect ClassFileProviderAspect {
       return new Parser(stc.problemReporter, true).parse(stc.cu, compilationResult);
     }
   }
-  
+
   IJavaElement around(JavaElement je, int ancestorType) :
     getAncestor(je, ancestorType) {
     IJavaElement element = je;
@@ -396,7 +396,7 @@ public privileged aspect ClassFileProviderAspect {
     IResource resource= cu.getResource();
     if (resource == null)
       return false;
-    
+
     ITextFileBufferManager manager= FileBuffers.getTextFileBufferManager();
     ITextFileBuffer textFileBuffer= manager.getTextFileBuffer(resource.getFullPath(), LocationKind.IFILE);
     if (textFileBuffer != null) {

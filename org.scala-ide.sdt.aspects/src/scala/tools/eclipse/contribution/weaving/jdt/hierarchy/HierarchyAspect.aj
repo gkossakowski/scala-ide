@@ -36,34 +36,34 @@ import scala.tools.eclipse.contribution.weaving.jdt.util.ReflectionUtils;
 
 @SuppressWarnings("restriction")
 public privileged aspect HierarchyAspect {
-  
+
   pointcut getAllTypesFromElement(ChangeCollector cc, IJavaElement element, ArrayList allTypes) :
     execution(void ChangeCollector.getAllTypesFromElement(IJavaElement, ArrayList)) &&
     args(element, allTypes) &&
     target(cc);
-  
+
   pointcut updateAnnotations(org.eclipse.jdt.internal.ui.javaeditor.OverrideIndicatorManager oim, CompilationUnit ast, IProgressMonitor progressMonitor) :
     execution(void org.eclipse.jdt.internal.ui.javaeditor.OverrideIndicatorManager.updateAnnotations(CompilationUnit, IProgressMonitor)) &&
     args(ast, progressMonitor) &&
     target(oim);
-  
+
   pointcut isOverwriting(Annotation a) :
     execution(boolean OverrideIndicatorImageProvider.isOverwriting(Annotation)) &&
     args(a);
-  
+
   pointcut annotationDefaultSelected(VerticalRulerEvent event) :
     execution(void JavaSelectMarkerRulerAction2.annotationDefaultSelected(VerticalRulerEvent)) &&
     args(event);
-  
+
   pointcut update(JavaSelectAnnotationRulerAction jsara) :
     execution(void JavaSelectAnnotationRulerAction.update()) &&
     target(jsara);
-  
+
   pointcut runWithEvent(JavaSelectAnnotationRulerAction jsara, Event event) :
     execution(void JavaSelectAnnotationRulerAction.runWithEvent(Event)) &&
     args(event) &&
     target(jsara);
-  
+
   void around(ChangeCollector cc, IJavaElement element, ArrayList allTypes) throws JavaModelException :
     getAllTypesFromElement(cc, element, allTypes) {
     getAllTypesFromElement0(cc, element, allTypes);
@@ -104,17 +104,17 @@ public privileged aspect HierarchyAspect {
         break;
     }
   }
-  
+
   void around(org.eclipse.jdt.internal.ui.javaeditor.OverrideIndicatorManager oim, CompilationUnit ast, IProgressMonitor progressMonitor) :
     updateAnnotations(oim, ast, progressMonitor) {
     if (!(oim.fJavaElement instanceof IScalaCompilationUnit)) {
       proceed(oim, ast, progressMonitor);
       return;
     }
-    
+
     HashMap annotationMap = new HashMap();
     ((IScalaCompilationUnit)oim.fJavaElement).createOverrideIndicators(annotationMap);
-    
+
     if (progressMonitor.isCanceled())
       return;
 
@@ -129,11 +129,11 @@ public privileged aspect HierarchyAspect {
           oim.fAnnotationModel.addAnnotation((Annotation)mapEntry.getKey(), (Position)mapEntry.getValue());
         }
       }
-      
+
       oim.fOverrideAnnotations = (Annotation[])annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
     }
   }
-  
+
   boolean around(Annotation a) :
     isOverwriting(a) {
     if (a instanceof IScalaOverrideIndicator)
@@ -145,12 +145,12 @@ public privileged aspect HierarchyAspect {
   void around(VerticalRulerEvent event) :
     annotationDefaultSelected(event) {
     Annotation annotation = event.getSelectedAnnotation();
-    if(annotation instanceof IScalaOverrideIndicator) 
+    if(annotation instanceof IScalaOverrideIndicator)
       ((IScalaOverrideIndicator)annotation).open();
     else
       proceed(event);
   }
-  
+
   void around(JavaSelectAnnotationRulerAction jsara) :
     update(jsara) {
     jsara.findJavaAnnotation();
@@ -163,7 +163,7 @@ public privileged aspect HierarchyAspect {
     else
       proceed(jsara);
   }
-  
+
   void around(JavaSelectAnnotationRulerAction jsara, Event event) :
     runWithEvent(jsara, event) {
     if (jsara.fAnnotation instanceof IScalaOverrideIndicator)

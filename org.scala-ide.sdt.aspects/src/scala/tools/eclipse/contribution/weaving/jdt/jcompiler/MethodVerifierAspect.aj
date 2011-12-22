@@ -9,8 +9,8 @@ import org.eclipse.jdt.internal.compiler.lookup.MethodVerifier;
 public aspect MethodVerifierAspect {
 
 	pointcut checkAbstractMethod(MethodVerifier methodVerifier,
-			MethodBinding abstractMethod): 
-		execution(void MethodVerifier+.checkAbstractMethod(MethodBinding)) && 
+			MethodBinding abstractMethod):
+		execution(void MethodVerifier+.checkAbstractMethod(MethodBinding)) &&
 		args(abstractMethod) &&
 		this(methodVerifier);
 
@@ -35,7 +35,7 @@ public aspect MethodVerifierAspect {
 
 		if (provider.isNotDeferredTraitMethod(abstractMethod))
 			// stop the abstract method's check if the method is a non-deferred (i.e. concrete) trait method
-			return; 
+			return;
 		else
 			proceed(methodVerifier, abstractMethod);
 	}

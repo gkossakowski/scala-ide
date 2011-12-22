@@ -42,7 +42,7 @@ class ScalaHyperlinkDetector extends AbstractHyperlinkDetector with HasLogger {
         val regionEnd = wordRegion.getOffset + wordRegion.getLength
         // removing 1 handles correctly hyperlinking requests @ EOF
         val end = if(sourceFile.length == regionEnd) regionEnd - 1 else regionEnd
-          
+
         val pos = compiler.rangePos(sourceFile, start, start, end)
 
         import compiler.{ log => _, _ }
@@ -53,7 +53,7 @@ class ScalaHyperlinkDetector extends AbstractHyperlinkDetector with HasLogger {
         logger.info("detectHyperlinks: wordRegion = " + wordRegion)
         compiler.askOption { () =>
           typed.left.toOption map {
-            case Import(expr, sels) => 
+            case Import(expr, sels) =>
               if(expr.pos.includes(pos)) {
                 @annotation.tailrec
                 def locate(p: Position, inExpr: Tree): Symbol = inExpr match {
@@ -62,7 +62,7 @@ class ScalaHyperlinkDetector extends AbstractHyperlinkDetector with HasLogger {
                     else inExpr.symbol
                   case tree => tree.symbol
                 }
-                
+
                 List(locate(pos, expr))
               }
               else {
@@ -95,7 +95,7 @@ class ScalaHyperlinkDetector extends AbstractHyperlinkDetector with HasLogger {
             logger.error("Falling back to selection engine for %s!".format(typed.left))
             links
           case links =>
-            links 
+            links
         }
       }
     })(None)

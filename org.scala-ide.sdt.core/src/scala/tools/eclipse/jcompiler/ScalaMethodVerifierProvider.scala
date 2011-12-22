@@ -53,8 +53,8 @@ class ScalaMethodVerifierProvider extends IMethodVerifierProvider with HasLogger
   }
 
   private def findProjectOf(abstractMethod: MethodBinding): IProject = {
-    // File name containing the abstractMethod definition. 
-    // Note that the returned path contains includes the project's folder where the file resides. 
+    // File name containing the abstractMethod definition.
+    // Note that the returned path contains includes the project's folder where the file resides.
     val qualifiedFileName = abstractMethod.declaringClass.getFileName().mkString
     // File containing the `abstractMethod` definition. From a file we can find the project the file belongs to.
     val file = ResourcesPlugin.getWorkspace().getRoot().getFile(Path.fromPortableString(qualifiedFileName))
@@ -77,9 +77,9 @@ class ScalaMethodVerifierProvider extends IMethodVerifierProvider with HasLogger
 
             def haveSameTpeParams(abstractMethod: MethodBinding, method: Symbol) = {
               val fps = m.paramss.flatten
-              
+
               val javaSig = javaSigOf(method)
-              
+
               // mapping Scala params' types to be Java conform, so that comparison
               // with `abstractMethod` is meaningful
               val paramsTypeSigs =
@@ -94,7 +94,7 @@ class ScalaMethodVerifierProvider extends IMethodVerifierProvider with HasLogger
                 false
             }
 
-            // overloading on the return type is not allowed neither on Java nor in Scala, 
+            // overloading on the return type is not allowed neither on Java nor in Scala,
             // which implies that we don't need to compare the method's return type.
             m.encodedName == abstractMethod.selector.mkString && haveSameTpeParams(abstractMethod, m)
           }
@@ -122,7 +122,7 @@ class ScalaMethodVerifierProvider extends IMethodVerifierProvider with HasLogger
         }
 
         val methodOwner = findMethodOwnerSymbol(abstractMethod)
-        // makes sure the symbol has been fully initialized. This is needed for example after a project's clean to ensure 
+        // makes sure the symbol has been fully initialized. This is needed for example after a project's clean to ensure
         // the symbol's flags are correctly set.
         methodOwner.initialize
         logger.debug("found %s owner: %s" format (abstractMethod.selector.mkString, methodOwner))

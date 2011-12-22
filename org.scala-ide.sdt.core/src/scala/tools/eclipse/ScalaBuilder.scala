@@ -21,26 +21,26 @@ class ScalaBuilder extends IncrementalProjectBuilder {
   def plugin = ScalaPlugin.plugin
 
   private val scalaJavaBuilder = new GeneralScalaJavaBuilder
-  
+
   override def clean(monitor : IProgressMonitor) {
     super.clean(monitor)
     val project = plugin.getScalaProject(getProject)
     project.clean(monitor)
-    
+
     ensureProject
     scalaJavaBuilder.clean(monitor)
     project.buildManager.clean(monitor)
     JDTUtils.refreshPackageExplorer
   }
-  
+
   override def build(kind : Int, ignored : ju.Map[_, _], monitor : IProgressMonitor) : Array[IProject] = {
     import IncrementalProjectBuilder._
     import buildmanager.sbtintegration.EclipseSbtBuildManager
 
     val project = plugin.getScalaProject(getProject)
-    
+
     val allSourceFiles = project.allSourceFiles()
-    
+
     val (addedOrUpdated, removed) = if (project.prepareBuild())
       (allSourceFiles, Set.empty[IFile])
     else {
@@ -48,7 +48,7 @@ class ScalaBuilder extends IncrementalProjectBuilder {
         case INCREMENTAL_BUILD | AUTO_BUILD =>
           val addedOrUpdated0 = new HashSet[IFile] ++ allSourceFiles.filter(FileUtils.hasBuildErrors(_))
           val removed0 = new HashSet[IFile]
-                                          
+
           getDelta(project.underlying).accept(new IResourceDeltaVisitor {
             def visit(delta : IResourceDelta) = {
               delta.getResource match {
@@ -72,11 +72,11 @@ class ScalaBuilder extends IncrementalProjectBuilder {
                 x => { val delta = getDelta(x); delta == null || delta.getKind != IResourceDelta.NO_CHANGE})) {
                 // in theory need to be able to identify the exact dependencies
                 // but this is deeply rooted inside the sbt dependency tracking mechanism
-                // so we just tell it to have a look at all the files 
+                // so we just tell it to have a look at all the files
                 // and it will figure out the exact changes during initialization
                 addedOrUpdated0 ++= allSourceFiles
               }
-            case _ => 
+            case _ =>
           }
           (Set.empty ++ addedOrUpdated0, Set.empty ++ removed0)
         case CLEAN_BUILD | FULL_BUILD =>
@@ -86,16 +86,16 @@ class ScalaBuilder extends IncrementalProjectBuilder {
 
     val subMonitor = SubMonitor.convert(monitor, 100).newChild(100, SubMonitor.SUPPRESS_NONE)
     subMonitor.beginTask("Running Scala Builder", 100)
-      
+
     project.build(addedOrUpdated, removed, subMonitor)
-    
+
     val depends = project.externalDepends.toList.toArray
     // SBT build manager already calls java builder internally
     if (allSourceFiles.exists(FileUtils.hasBuildErrors(_)) || project.buildManager.isInstanceOf[EclipseSbtBuildManager])
       depends
     else {
       ensureProject
-      val javaDepends = scalaJavaBuilder.build(kind, ignored, subMonitor) 
+      val javaDepends = scalaJavaBuilder.build(kind, ignored, subMonitor)
       val modelManager = JavaModelManager.getJavaModelManager
       val state = modelManager.getLastBuiltState(getProject, null).asInstanceOf[State]
       val newState = if (state ne null) state
@@ -110,7 +110,7 @@ class ScalaBuilder extends IncrementalProjectBuilder {
       (Set.empty ++ depends ++ javaDepends).toArray
     }
   }
-  
+
   def ensureProject = {
     if (scalaJavaBuilder.getProject == null)
       scalaJavaBuilder.setProject0(getProject)
@@ -122,10 +122,10 @@ object StateUtils extends ReflectionUtils {
   private val stateCtor = getDeclaredConstructor(stateClazz, classOf[JavaBuilder])
   private val tagAsStructurallyChangedMethod = getDeclaredMethod(stateClazz, "tagAsStructurallyChanged")
   private val structurallyChangedTypesField = getDeclaredField(stateClazz, "structurallyChangedTypes")
-  
+
   def newState(b : JavaBuilder) = stateCtor.newInstance(b)
-  
+
   def tagAsStructurallyChanged(s : State) = tagAsStructurallyChangedMethod.invoke(s)
-  
+
   def resetStructurallyChangedTypes(s : State) = structurallyChangedTypesField.set(s, null)
 }

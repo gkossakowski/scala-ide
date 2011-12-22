@@ -16,7 +16,7 @@ public aspect SourceLookupAspect {
   pointcut findSourceElements(Object object) :
     execution(Object[] AbstractSourceLookupDirector.findSourceElements(Object)) &&
     args(object);
-  
+
   Object[] around(Object object) throws CoreException :
     findSourceElements(object) {
     if (object instanceof String) {
@@ -31,7 +31,7 @@ public aspect SourceLookupAspect {
         return result.toArray();
       }
     }
-    
+
     return proceed(object);
   }
 }

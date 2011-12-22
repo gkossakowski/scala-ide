@@ -42,7 +42,7 @@ object ScalaSyntaxClasses {
 object ScalariformToSyntaxClass {
 
   // TODO: Distinguish inside from outside of CDATA; distinguish XML tag and attribute name
-  
+
   def apply(token: Token): ScalaSyntaxClass = token.tokenType match {
     case LPAREN | RPAREN | LBRACE | RBRACE | LBRACKET | RBRACKET => ScalaSyntaxClasses.BRACKET
     case STRING_LITERAL => ScalaSyntaxClasses.STRING

@@ -22,19 +22,19 @@ import scala.tools.eclipse.{SettingConverterUtil }
 
 class ScalaPreferences extends PropertyPage with IWorkbenchPreferencePage with EclipseSettings
   with ScalaPluginPreferencePage {
-	
+
 	/** Pulls the preference store associated with this plugin */
   override def doGetPreferenceStore() : IPreferenceStore = {
 	    ScalaPlugin.plugin.getPreferenceStore
   }
-  
+
   override def init(wb : IWorkbench) { }
-  
+
   /** Returns the id of what preference page we use */
   import EclipseSetting.toEclipseBox
   lazy val scalaBoxes   = IDESettings.pluginSettings
   lazy val eclipseBoxes = scalaBoxes.map { s => toEclipseBox(s, getPreferenceStore) }
-  
+
   def createContents(parent : Composite) : Control = {
     val composite = {
         //No Outer Composite
@@ -47,7 +47,7 @@ class ScalaPreferences extends PropertyPage with IWorkbenchPreferencePage with E
         tmp.setLayoutData(data)
         tmp
     }
-    
+
     eclipseBoxes.foreach(eBox => {
       val group = new Group(composite, SWT.SHADOW_ETCHED_IN)
       group.setText(eBox.name)
@@ -61,7 +61,7 @@ class ScalaPreferences extends PropertyPage with IWorkbenchPreferencePage with E
     })
     composite
   }
-  
+
   override def performOk = try {
   	eclipseBoxes.foreach(_.eSettings.foreach(_.apply()))
     save()
@@ -69,9 +69,9 @@ class ScalaPreferences extends PropertyPage with IWorkbenchPreferencePage with E
   } catch {
     case ex => ScalaPlugin.plugin.logError(ex); false
   }
-  
+
   def updateApply = updateApplyButton
-  
+
   /** Updates the apply button with the appropriate enablement. */
   protected override def updateApplyButton() : Unit = {
     if(getApplyButton != null) {
@@ -82,7 +82,7 @@ class ScalaPreferences extends PropertyPage with IWorkbenchPreferencePage with E
       }
     }
   }
-  
+
   def save(): Unit = {
   	save(scalaBoxes, getPreferenceStore)
 

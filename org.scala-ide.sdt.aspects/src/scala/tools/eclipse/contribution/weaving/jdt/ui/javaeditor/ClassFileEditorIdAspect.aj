@@ -25,7 +25,7 @@ public aspect ClassFileEditorIdAspect {
       if (cf instanceof IScalaClassFile)
         return "scala.tools.eclipse.ScalaClassFileEditor";
     }
-    
+
     return proceed(input);
   }
 }

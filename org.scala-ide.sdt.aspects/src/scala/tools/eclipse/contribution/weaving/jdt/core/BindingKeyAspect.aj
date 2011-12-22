@@ -12,7 +12,7 @@ public privileged aspect BindingKeyAspect {
   pointcut nextToken(BindingKeyParser.Scanner scanner) :
     execution(int BindingKeyParser.Scanner.nextToken()) &&
     target(scanner);
-  
+
   int around(BindingKeyParser.Scanner scanner) :
     nextToken(scanner) {
     int previousTokenEnd = scanner.index;

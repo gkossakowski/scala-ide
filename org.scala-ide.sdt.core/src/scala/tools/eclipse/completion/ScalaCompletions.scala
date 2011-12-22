@@ -9,19 +9,19 @@ import org.eclipse.core.runtime.NullProgressMonitor
 
 /** Base class for Scala completions. No UI dependency, can be safely used in a
  *  headless testing environment.
- *  
+ *
  *  @see scala.tools.eclipse.ui.ScalaCompletinProposalComputer
  */
 class ScalaCompletions {
   import org.eclipse.jface.text.IRegion
-  
+
   def findCompletions(region: IRegion)(position: Int, scu: ScalaCompilationUnit)
                              (sourceFile: SourceFile, compiler: ScalaPresentationCompiler): List[CompletionProposal] = {
-    
+
     val pos = compiler.rangePos(sourceFile, position, position, position)
-    
+
     val start = if (region == null) position else region.getOffset
-    
+
     val typed = new compiler.Response[compiler.Tree]
     compiler.askTypeAt(pos, typed)
     val t1 = typed.get.left.toOption
@@ -31,7 +31,7 @@ class ScalaCompletions {
     t1 match {
       // completion on select
       case Some(s@compiler.Select(qualifier, name)) if qualifier.pos.isDefined && qualifier.pos.isRange =>
-        val cpos0 = qualifier.pos.end 
+        val cpos0 = qualifier.pos.end
         val cpos = compiler.rangePos(sourceFile, cpos0, cpos0, cpos0)
         compiler.askTypeCompletion(cpos, completed)
       case Some(compiler.Import(expr, _)) =>
@@ -44,13 +44,13 @@ class ScalaCompletions {
         val cpos = compiler.rangePos(sourceFile, start, start, start)
         compiler.askScopeCompletion(cpos, completed)
     }
-    
+
     val prefix = (if (position <= start) "" else scu.getBuffer.getText(start, position-start).trim).toArray
-    
+
     def nameMatches(sym : compiler.Symbol) = prefixMatches(sym.decodedName.toString.toArray, prefix)
-    
+
     val buff = new mutable.ListBuffer[CompletionProposal]
-    
+
     def alreadyListed(fullyQualifiedName: String) = buff.exists((completion) => fullyQualifiedName.equals(completion.fullyQualifiedName))
 
     for (completions <- completed.get.left.toOption) {
@@ -70,7 +70,7 @@ class ScalaCompletions {
         }
       }
     }
-    
+
     // try to find a package name prefixing the word being completed
     val packageName= t1 match {
       case Some(e) if position > e.pos.start =>
@@ -86,9 +86,9 @@ class ScalaCompletions {
           null
       case _ => null
     }
-    
+
     println("Search for: " + (if (packageName == null) "null" else new String(packageName)) + " . " + new String(prefix))
-    
+
     if (prefix.length > 0 || packageName != null) {
       // if there is data to work with, look for a type in the classpath
 
@@ -98,7 +98,7 @@ class ScalaCompletions {
 	      val packageName= new String(packageNameArray)
 	      val simpleName= new String(simpleTypeName)
 	      val fullyQualifiedName= (if (packageName.length > 0) packageName + '.' else "") + simpleName
-	      
+
 	      println("Found type: " + fullyQualifiedName)
 
 	      if (!alreadyListed(fullyQualifiedName)) {
@@ -119,7 +119,7 @@ class ScalaCompletions {
 	      }
         }
       }
-      
+
       // launch the JDT search, for a type in the package, starting with the given prefix
       new SearchEngine().searchAllTypeNames(
           packageName,
@@ -131,9 +131,9 @@ class ScalaCompletions {
           requestor,
           IJavaSearchConstants.WAIT_UNTIL_READY_TO_SEARCH, // wait until all types are indexed by the JDT
           null)
-          
+
     }
-    
+
     buff.toList
   }
 }

@@ -38,7 +38,7 @@ class ScalaProject(val underlying: IProject) {
   private var hasBeenBuilt = false
   private val resetPendingLock = new Object
   private var resetPending = false
-  
+
   private val buildListeners = new HashSet[BuildSuccessListener]
 
   case class InvalidCompilerSettings() extends RuntimeException(
@@ -63,7 +63,7 @@ class ScalaProject(val underlying: IProject) {
           ex.printStackTrace()
           if (underlying.isOpen)
             failedCompilerInitialization("error initializing Scala compiler")
-          plugin.logError(ex)          
+          plugin.logError(ex)
           None
       }
     }
@@ -76,22 +76,22 @@ class ScalaProject(val underlying: IProject) {
   /** Compiler settings that are honored by the presentation compiler. */
   private def isPCSetting(settings: Settings): Set[Settings#Setting] = {
     import settings.{ plugin => pluginSetting, _ }
-    Set(deprecation, 
-        unchecked, 
-        pluginOptions, 
+    Set(deprecation,
+        unchecked,
+        pluginOptions,
         verbose,
-        Xexperimental, 
-        future, 
-        Xmigration28, 
+        Xexperimental,
+        future,
+        Xmigration28,
         pluginSetting,
         pluginsDir,
-        YpresentationDebug, 
-        YpresentationVerbose, 
-        YpresentationLog, 
-        YpresentationReplay, 
+        YpresentationDebug,
+        YpresentationVerbose,
+        YpresentationLog,
+        YpresentationReplay,
         YpresentationDelay)
   }
-  
+
   private var messageShowed = false
 
   private def failedCompilerInitialization(msg: String) {
@@ -100,10 +100,10 @@ class ScalaProject(val underlying: IProject) {
       if (!messageShowed) {
         messageShowed = true
         asyncExec {
-          val doAdd = MessageDialog.openQuestion(ScalaPlugin.getShell, "Add Scala library to project classpath?", 
+          val doAdd = MessageDialog.openQuestion(ScalaPlugin.getShell, "Add Scala library to project classpath?",
               ("There was an error initializing the Scala compiler: %s. \n\n"+
-               "The editor compiler will be restarted when the project is cleaned or the classpath is changed.\n\n" + 
-               "Add the Scala library to the classpath of project %s?") 
+               "The editor compiler will be restarted when the project is cleaned or the classpath is changed.\n\n" +
+               "Add the Scala library to the classpath of project %s?")
               .format(msg, underlying.getName))
           if (doAdd) {
             plugin check {
@@ -189,12 +189,12 @@ class ScalaProject(val underlying: IProject) {
         case IClasspathEntry.CPE_SOURCE =>
           val cpeOutput = cpe.getOutputLocation
           val outputLocation = if (cpeOutput != null) cpeOutput else project.getOutputLocation
-              
+
           if (outputLocation != null) {
             val absPath = plugin.workspaceRoot.findMember(outputLocation)
-            if (absPath != null) 
+            if (absPath != null)
               path += absPath.getLocation
-          }  
+          }
 
         case _ =>
           ScalaPlugin.plugin.logWarning("Classpath computation encountered unknown entry: " + cpe)
@@ -400,16 +400,16 @@ class ScalaProject(val underlying: IProject) {
         case t: Throwable => plugin.logError("Unable to set setting '" + setting.name + "' to '" + value0 + "'", t)
       }
     }
-    
+
     // handle additional parameters
     val additional = store.getString(CompilerSettings.ADDITIONAL_PARAMS)
     println("setting additional paramters: " + additional)
     settings.processArgumentString(additional)
   }
-  
+
   private def buildManagerInitialize: String =
     storage.getString(SettingConverterUtil.convertNameToProperty(properties.ScalaPluginSettings.buildManager.name))
-  
+
   def storage = {
     val workspaceStore = ScalaPlugin.plugin.getPreferenceStore
     val projectStore = new PropertyStore(underlying, workspaceStore, plugin.pluginId)
@@ -427,9 +427,9 @@ class ScalaProject(val underlying: IProject) {
       sourceFolders.exists(_ == sourceFolderPath)
     }
   }
-  
+
   /**
-   * Performs `op` on the presentation compiler, if the compiler has been initialized. 
+   * Performs `op` on the presentation compiler, if the compiler has been initialized.
    * Otherwise, do nothing (no exception thrown).
    */
   def doWithPresentationCompiler(op: ScalaPresentationCompiler => Unit): Unit = {
@@ -438,16 +438,16 @@ class ScalaProject(val underlying: IProject) {
       case None =>
     }
   }
-  
-  def defaultOrElse[T]: T = {  
+
+  def defaultOrElse[T]: T = {
     if (underlying.isOpen)
       failedCompilerInitialization("")
-    
-    throw InvalidCompilerSettings() 
+
+    throw InvalidCompilerSettings()
   }
 
-  /** 
-   * If the presentation compiler has failed to initialize and no `orElse` is specified, 
+  /**
+   * If the presentation compiler has failed to initialize and no `orElse` is specified,
    * the default handler throws an `InvalidCompilerSettings` exception
    * If T = Unit, then doWithPresentationCompiler can be used, which does not throw.
    */
@@ -479,7 +479,7 @@ class ScalaProject(val underlying: IProject) {
       // causes problems if errors are reported against that file. Anyway, it's wrong to have a sourcepath
       // when using the build manager.
       settings.sourcepath.value = ""
-      	
+
       // Which build manager?
       // We assume that build manager setting has only single box
       val choice = buildManagerInitialize
@@ -502,7 +502,7 @@ class ScalaProject(val underlying: IProject) {
 
   /* If true, then it means that all source files have to be reloaded */
   def prepareBuild(): Boolean = if (!hasBeenBuilt) buildManager.invalidateAfterLoad else false
-  
+
   def build(addedOrUpdated: Set[IFile], removed: Set[IFile], monitor: SubMonitor) {
     if (addedOrUpdated.isEmpty && removed.isEmpty)
       return
@@ -514,15 +514,15 @@ class ScalaProject(val underlying: IProject) {
     refreshOutput
 
     // Already performs saving the dependencies
-    
-    if (!buildManager.hasErrors) 
+
+    if (!buildManager.hasErrors)
       buildListeners foreach { _.buildSuccessful }
   }
-  
+
   def addBuildSuccessListener(listener: BuildSuccessListener) {
     buildListeners add listener
   }
-  
+
   def removeBuildSuccessListener(listener: BuildSuccessListener) {
     buildListeners remove listener
   }

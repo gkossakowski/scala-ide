@@ -1,7 +1,7 @@
 package scala.tools.eclipse.util
 
-/** 
- * Classes can mix this trait for having access to the `logger`. 
+/**
+ * Classes can mix this trait for having access to the `logger`.
  * Clients are allowed to inject a different logger.
  */
 trait HasLogger {

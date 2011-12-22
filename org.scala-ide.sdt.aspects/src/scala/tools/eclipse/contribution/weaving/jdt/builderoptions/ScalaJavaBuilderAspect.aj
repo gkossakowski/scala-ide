@@ -22,19 +22,19 @@ import org.eclipse.jdt.internal.core.util.Util;
 public privileged aspect ScalaJavaBuilderAspect {
   pointcut build() :
     execution(IProject[] ScalaJavaBuilder.build(int, Map, IProgressMonitor) throws CoreException);
-  
+
   pointcut cleanOutputFolders(boolean copyBack) :
     args(copyBack) &&
     execution(void BatchImageBuilder.cleanOutputFolders(boolean) throws CoreException);
-  
+
   pointcut isJavaLikeFileName(String fileName) :
     args(fileName) &&
-    execution(boolean Util.isJavaLikeFileName(String));  
-  
+    execution(boolean Util.isJavaLikeFileName(String));
+
   pointcut filterExtraResource(IResource resource) :
     args(resource) &&
     execution(boolean JavaBuilder.filterExtraResource(IResource));
-  
+
   void around(BatchImageBuilder builder, boolean copyBack) throws CoreException :
     target(builder) &&
     cleanOutputFolders(copyBack) &&
@@ -47,7 +47,7 @@ public privileged aspect ScalaJavaBuilderAspect {
           builder.copyExtraResourcesBack(sourceLocation, false);
       }
   }
-  
+
   boolean around(String fileName) :
     isJavaLikeFileName(fileName) &&
     cflow(build()) &&
@@ -57,7 +57,7 @@ public privileged aspect ScalaJavaBuilderAspect {
     else
       return proceed(fileName);
   }
-  
+
   boolean around(IResource resource) :
     filterExtraResource(resource) &&
     cflow(build()) {

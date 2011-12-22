@@ -19,24 +19,24 @@ abstract class BuildReporter(project0: ScalaProject, settings0: Settings) extend
   val prob: ListBuffer[BuildProblem] = ListBuffer.empty
 
   val taskScanner = new TaskScanner(project0)
-  
+
   override def info0(pos : Position, msg : String, severity : Severity, force : Boolean) = {
     severity.count += 1
     if (severity.id > 1)
       buildManager.hasErrors = true
-    
+
     val eclipseSeverity = severity.id match {
       case 2 => IMarker.SEVERITY_ERROR
       case 1 => IMarker.SEVERITY_WARNING
       case 0 => IMarker.SEVERITY_INFO
     }
-    
+
     try {
       if(pos.isDefined) {
         val source = pos.source
         val length = source.identifier(pos).map(_.length).getOrElse(0)
         source.file match {
-          case EclipseResource(i : IFile) => 
+          case EclipseResource(i : IFile) =>
             if (!pos.source.file.hasExtension("java"))
               FileUtils.buildError(i, eclipseSeverity, msg, pos.point, length, pos.line, null)
             else
@@ -44,7 +44,7 @@ abstract class BuildReporter(project0: ScalaProject, settings0: Settings) extend
           case f =>
             logger.info("no EclipseResource associated to %s [%s]".format(f.path, f.getClass))
             EclipseResource.fromString(source.file.path) match {
-              case Some(i: IFile) => 
+              case Some(i: IFile) =>
                 // this may happen if a file was compileLate by the build compiler
                 // for instance, when a source file (on the sourcepath) is newer than the classfile
                 // the compiler will create PlainFile instances in that case
@@ -67,12 +67,12 @@ abstract class BuildReporter(project0: ScalaProject, settings0: Settings) extend
 	      	  project0.buildError(eclipseSeverity, msg, null)
         }
     } catch {
-      case ex : UnsupportedOperationException => 
+      case ex : UnsupportedOperationException =>
         prob += new BuildProblem(severity, msg, NoPosition)
         project0.buildError(eclipseSeverity, msg, null)
     }
   }
-  
+
   override def comment(pos : Position, msg : String) {
     val tasks = taskScanner.extractTasks(msg, pos)
     for (TaskScanner.Task(tag, msg, priority, pos) <- tasks if pos.isDefined) {
@@ -86,7 +86,7 @@ abstract class BuildReporter(project0: ScalaProject, settings0: Settings) extend
       }
     }
   }
-  
+
   override def reset() {
   	super.reset()
   	prob.clear()

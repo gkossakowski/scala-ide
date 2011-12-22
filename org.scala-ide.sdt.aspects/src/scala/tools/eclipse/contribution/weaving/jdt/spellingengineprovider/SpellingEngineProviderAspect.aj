@@ -5,7 +5,7 @@ import org.eclipse.jdt.internal.ui.text.spelling.DefaultSpellingEngine;
 @SuppressWarnings("restriction")
 public privileged aspect SpellingEngineProviderAspect {
 
-	pointcut defaultSpellingEngineCreations(DefaultSpellingEngine instance) : 
+	pointcut defaultSpellingEngineCreations(DefaultSpellingEngine instance) :
     execution(public DefaultSpellingEngine.new()) && this(instance);
 
 	after(DefaultSpellingEngine instance) returning: defaultSpellingEngineCreations(instance) {

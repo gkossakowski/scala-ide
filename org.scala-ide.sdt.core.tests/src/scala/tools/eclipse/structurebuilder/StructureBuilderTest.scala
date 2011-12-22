@@ -19,14 +19,14 @@ object StructureBuilderTest extends testsetup.TestProjectSetup("simple-structure
 
 class StructureBuilderTest {
   import StructureBuilderTest._
-  
+
   def setupWorkspace {
     // auto-building is off
     val desc = SDTTestUtils.workspace.getDescription
     desc.setAutoBuilding(false)
     SDTTestUtils.workspace.setDescription(desc)
   }
-  
+
   /** Return the toString output for all compilation units in the given fragment. */
   def compilationUnitsStructure(frag: IPackageFragment): String = {
     val buf = new StringBuilder
@@ -38,7 +38,7 @@ class StructureBuilderTest {
     }
     buf.toString.trim
   }
-  
+
   @Test def testAnnotations() {
     val annotsPkg = srcPackageRoot.getPackageFragment("annots");
     assertNotNull(annotsPkg)
@@ -50,36 +50,36 @@ class StructureBuilderTest {
     val m2 = tpe.getMethod("anotherTestMethod", Array())
     println(m1.getAnnotations.toList)
     println(m2.getAnnotations.toList)
-    
+
     assertTrue(m1.getAnnotations.length == 1)
     assertTrue(m1.getAnnotation("Test").exists)
     assertTrue(m2.getAnnotations.length == 1)
     assertTrue(m2.getAnnotation("Test").exists)
   }
-  
+
   @Test def testSearchIndexAnnotations() {
     import IJavaSearchConstants._
     val pattern = SearchPattern.createPattern("org.junit.Test", TYPE, ANNOTATION_TYPE_REFERENCE, SearchPattern.R_PREFIX_MATCH)
     val scope = SearchEngine.createJavaSearchScope(Array(srcPackageRoot.getPackageFragment("annots"): IJavaElement))
-    
+
     var elems = Set[IMethod]()
-    
+
     val requestor = new SearchRequestor {
       def acceptSearchMatch(m: SearchMatch) {
         m.getElement match {
           case method: IMethod => elems += method
-          case elem => 
+          case elem =>
             println(elem)
             fail
         }
       }
     }
-    
+
     (new SearchEngine).search(pattern, Array[SearchParticipant](SearchEngine.getDefaultSearchParticipant), scope, requestor, null)
     println(elems)
     assertEquals(2, elems.size)
   }
-  
+
   /** This tests that search for annotations still succeeds after a reconcile. The
    *  reconciler triggers type-checking, which in turn produces typed trees. The indexer
    *  is run again on the document, this time with attributed trees. Type-checked trees
@@ -96,7 +96,7 @@ class StructureBuilderTest {
     testSearchIndexAnnotations()
   }
 
-  /** Test the structure as seen by the JDT. Use the JDT API to 
+  /** Test the structure as seen by the JDT. Use the JDT API to
    *  retrieve the package `traits' and compare the toString output.
    */
   @Test def testStructure() {
@@ -107,7 +107,7 @@ class StructureBuilderTest {
     // verify
     assertEquals(TraitsTestOracle.expectedFragment, jdtStructure)
   }
-  
+
   @Test def correctlyExposeToJDT_ScalaArray_1000586() {
     // when
     val fragment = srcPackageRoot.getPackageFragment("t1000586")
@@ -116,7 +116,7 @@ class StructureBuilderTest {
     // verify
     assertEquals(T1000586TestOracle.expectedFragment, jdtStructure)
   }
-  
+
   @Test def correctlyExposeToJDT_ScalaMethodReturnType_WithTypeParameters_1000568() {
     // when
     val fragment = srcPackageRoot.getPackageFragment("t1000568")
@@ -125,7 +125,7 @@ class StructureBuilderTest {
     // verify
     assertEquals(T1000568TestOracle.expectedFragment, jdtStructure)
   }
-  
+
   import org.eclipse.jdt.core.compiler.IProblem
   private class ProblemReporterAdapter extends IProblemRequestor {
     def acceptProblem(problem: IProblem) {}
@@ -133,14 +133,14 @@ class StructureBuilderTest {
     def endReporting() {}
     def isActive(): Boolean = true
   }
-  
+
   @Test
   def t1000524_neg_JavaCodeCannotCall_ScalaModuleMethodThatIsDefinedWithTheSameSignatureInTheCompanionClass() {
     val expectedProblem = "Pb(201) Cannot make a static reference to the non-static method getOpt1(Option<T>) from the type OptTest"
-    
+
     //when
     val unit = compilationUnit("t1000524_neg/opttest/java/OT.java")
-    
+
     val owner = new WorkingCopyOwner() {
       override def getProblemRequestor(unit: org.eclipse.jdt.core.ICompilationUnit): IProblemRequestor =
         new ProblemReporterAdapter {
@@ -155,18 +155,18 @@ class StructureBuilderTest {
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
   }
-  
+
   @Test
   def t1000524_pos_JavaCodeCanCall_ScalaMethodWithParametricTypes() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("t1000524_pos/opttest/java/OT.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
@@ -174,18 +174,18 @@ class StructureBuilderTest {
     // verify
     verify(requestor, times(0)).acceptProblem(any())
   }
-  
+
   @Test
   def t1000524_1_JavaCodeCanCall_ScalaMethodWithParametricBoundedType() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("t1000524_1/opttest/java/OT.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
@@ -193,18 +193,18 @@ class StructureBuilderTest {
     // verify
     verify(requestor, times(0)).acceptProblem(any())
   }
-  
+
   @Test
   def t1000524_2_JavaCodeCanCall_ScalaMethodWithParametricBoundedType() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("t1000524_2/opttest/java/OT.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
@@ -212,18 +212,18 @@ class StructureBuilderTest {
     // verify
     verify(requestor, times(0)).acceptProblem(any())
   }
-  
+
   @Test
   def genericSignature_ofScalaMember_is_correctlyExposedToJDT() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("generic_signature/akka/Actor.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
@@ -231,18 +231,18 @@ class StructureBuilderTest {
     // verify
     verify(requestor, times(0)).acceptProblem(any())
   }
-  
+
   @Test
   def javaCalls_ScalaMethod_withContravariantArgumentType() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("method_with_type_contravariance/Foo.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)
@@ -250,18 +250,18 @@ class StructureBuilderTest {
     // verify
     verify(requestor, times(0)).acceptProblem(any())
   }
-  
+
   @Test
   def exposeJavaGenericSigOfScalaClass() {
     //when
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = mock(classOf[WorkingCopyOwner])
     when(owner.getProblemRequestor(any())).thenReturn(requestor)
-    
+
     val unit = compilationUnit("t1000625/MyFoo.java")
-    
+
     // then
     // this will trigger the java reconciler so that the problems will be reported to the `requestor`
     unit.getWorkingCopy(owner, new NullProgressMonitor)

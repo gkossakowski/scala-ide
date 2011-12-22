@@ -58,28 +58,28 @@ trait NewResourceWizard extends BasicNewResourceWizard {
         setControl(topLevel)
         var fail = false
         if (getSelection.size == 1 && (getSelection.getFirstElement match {
-        case pkg : IPackageFragment => 
+        case pkg : IPackageFragment =>
           packages += pkg
           true
-        case _ => false  
+        case _ => false
         })) {} else {
           val i = getSelection.iterator
           while (i.hasNext) i.next match {
           case res : IResource => populate(res.getProject)
           case adaptable : IAdaptable => adaptable.adaptToSafe[IResource] foreach { res => populate(res.getProject) }
-          case _ => 
+          case _ =>
           }
         }
         {
           packages.size match {
-          case 0 => 
+          case 0 =>
             setErrorMessage("Cannot create top-level Scala " + noun(true) + " without project or package selection.")
             return
           case 1 =>
             val pkgName0 = packages(0).getElementName
             val pkgName = if (pkgName0.length == 0) "default package" else "package \""+pkgName0+"\""
             setDescription("Create new top-level Scala " + noun(true) + " in "+pkgName+" of project \"" + packages(0).getResource.getProject.getName + "\"")
-          case _ => 
+          case _ =>
             val group = label(topLevel, "Package:")
             choose = new Combo(group, SWT.SINGLE | SWT.READ_ONLY)
             addToGroup(group, choose)
@@ -95,7 +95,7 @@ trait NewResourceWizard extends BasicNewResourceWizard {
   }
   private def label(parent : Composite, label : String) = {
     val group= new Group(parent, SWT.NONE);
-    group.setText(label); 
+    group.setText(label);
     val layout = new GridLayout();
     layout.numColumns = 2;
     group.setLayout(layout);
@@ -140,11 +140,11 @@ trait NewResourceWizard extends BasicNewResourceWizard {
     if (pkg eq null) {
       mainPage.setErrorMessage("Must select an existing package.")
       return false
-    }        
+    }
     val plugin = ScalaPlugin.plugin
     val project = plugin.getScalaProject(pkg.getResource.getProject)
     val nameOk = name.length != 0 && Chars.isIdentifierStart(name(0)) && (1 until name.length).forall(i => Chars.isIdentifierPart(name(i)))
-      
+
     if (!nameOk) {
       mainPage.setErrorMessage("Not a valid name.")
       return false
@@ -158,7 +158,7 @@ trait NewResourceWizard extends BasicNewResourceWizard {
 
     val pkgName = pkg.getElementName
     val pkgDecl = if (pkgName.length == 0) "" else "package "+pkgName+"\n\n"
-    
+
     file.create(new java.io.StringBufferInputStream(
       pkgDecl +
       kind.toLowerCase + " " + name + " {\n" + body + "\n}\n"
@@ -169,17 +169,17 @@ trait NewResourceWizard extends BasicNewResourceWizard {
       case null =>
       case dw => dw.getActivePage match {
         case null =>
-        case page => IDE.openEditor(page, file, true) 
+        case page => IDE.openEditor(page, file, true)
       }
     }
     postFinish(project, file)
-    
+
     true
   } catch {
   case ex => ScalaPlugin.plugin.logError(ex); false
   }
   protected def postFinish(project : ScalaProject, file : IFile) = {}
-  
-  
+
+
   protected def body : String = ""
 }

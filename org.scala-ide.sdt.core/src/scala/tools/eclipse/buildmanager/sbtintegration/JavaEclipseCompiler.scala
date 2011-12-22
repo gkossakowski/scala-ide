@@ -17,30 +17,30 @@ import org.eclipse.core.resources.IResource
  */
 class JavaEclipseCompiler(project: IProject, monitor: SubMonitor) {
   private val scalaJavaBuilder = new GeneralScalaJavaBuilder
-  
+
   def plugin = ScalaPlugin.plugin
   def getProject = project
-  
+
   def build(kind: Int): Array[IProject] = {
-    
-    
+
+
     val project = plugin.getScalaProject(getProject)
-    
+
     val allSourceFiles = project.allSourceFiles()
     val depends = project.externalDepends.toList.toArray
     if (allSourceFiles.exists(FileUtils.hasBuildErrors(_)))
       depends
     else {
       ensureProject
-      
+
       // refresh output directories, since SBT removes classfiles that the Eclipse
       // Java compiler expects to find
       for (folder <- project.outputFolders) {
         val container = ResourcesPlugin.getWorkspace().getRoot().getFolder(folder)
         container.refreshLocal(IResource.DEPTH_INFINITE, null)
       }
-      
-      val javaDepends = scalaJavaBuilder.build(kind,new java.util.HashMap(), monitor) 
+
+      val javaDepends = scalaJavaBuilder.build(kind,new java.util.HashMap(), monitor)
       val modelManager = JavaModelManager.getJavaModelManager
       val state = modelManager.getLastBuiltState(getProject, null).asInstanceOf[State]
       val newState = if (state ne null) state
@@ -55,7 +55,7 @@ class JavaEclipseCompiler(project: IProject, monitor: SubMonitor) {
       (Set.empty ++ depends ++ javaDepends).toArray
     }
   }
-    
+
   def ensureProject = {
     if (scalaJavaBuilder.getProject == null)
       scalaJavaBuilder.setProject0(getProject)

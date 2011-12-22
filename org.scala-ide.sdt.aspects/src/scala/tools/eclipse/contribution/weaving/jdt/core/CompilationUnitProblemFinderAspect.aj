@@ -30,7 +30,7 @@ public privileged aspect CompilationUnitProblemFinderAspect {
     HashMap problems,
     boolean creatingAST,
     int reconcileFlags,
-    IProgressMonitor monitor) : 
+    IProgressMonitor monitor) :
     args(unitElement, parser, workingCopyOwner, problems, creatingAST, reconcileFlags, monitor) &&
     execution(public static CompilationUnitDeclaration CompilationUnitProblemFinder.process(
       CompilationUnit, SourceElementParser, WorkingCopyOwner, HashMap, boolean, int, IProgressMonitor));
@@ -44,10 +44,10 @@ public privileged aspect CompilationUnitProblemFinderAspect {
     int reconcileFlags,
     IProgressMonitor monitor) :
     process(unitElement, parser, workingCopyOwner, problems, creatingAST, reconcileFlags, monitor) {
-    CompilationUnit original = unitElement.originalFromClone(); 
+    CompilationUnit original = unitElement.originalFromClone();
     if (!(original instanceof IScalaElement))
       return proceed(unitElement, parser, workingCopyOwner, problems, creatingAST, reconcileFlags, monitor);
-    
+
     if (original instanceof IScalaSourceFile) {
       IProblem[] unitProblems = ((IScalaSourceFile)original).getProblems();
       int length = unitProblems == null ? 0 : unitProblems.length;

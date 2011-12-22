@@ -19,14 +19,14 @@ import scala.tools.eclipse.properties.IDESettings
  * Preferences to their default values.
  */
 class ScalaCompilerPreferenceInitializer extends AbstractPreferenceInitializer {
-  
+
   /** Actually initializes preferences */
   def initializeDefaultPreferences() : Unit = {
-	  
+
     ScalaPlugin.plugin.check {
       val node = new DefaultScope().getNode(ScalaPlugin.plugin.pluginId)
       val store = ScalaPlugin.plugin.getPluginPreferences
-      
+
       def defaultPreference(s: Settings#Setting) {
       	val preferenceName = convertNameToProperty(s.name)
           s match {

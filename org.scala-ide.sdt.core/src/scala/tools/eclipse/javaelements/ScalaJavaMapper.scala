@@ -12,7 +12,7 @@ import scala.tools.eclipse.ScalaPresentationCompiler
 import ch.epfl.lamp.fjbg.{ JObjectType, JType }
 import scala.tools.eclipse.util.HasLogger
 
-trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : ScalaPresentationCompiler => 
+trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : ScalaPresentationCompiler =>
 
   def mapType(t : Tree) : String = {
     (t match {
@@ -41,11 +41,11 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
   }
 
   /** Compatible with both 2.8 and 2.9 (interface HasFlags appears in 2.9).
-   * 
+   *
    *  COMPAT: Once we drop 2.8, rewrite to use the HasFlags trait in scala.reflect.generic
    */
-  
-  
+
+
 /* Re-add when ticket #4560 is fixed.
   type HasFlags = {
       /** Whether this entity has ANY of the flags in the given mask. */
@@ -53,8 +53,8 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       def isFinal: Boolean
       def isTrait: Boolean
   }
-*/  
-  
+*/
+
   def mapModifiers(owner: Symbol) : Int = {
     var jdtMods = 0
     if(owner.hasFlag(Flags.PRIVATE))
@@ -63,42 +63,42 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       jdtMods = jdtMods | ClassFileConstants.AccProtected
     else
       jdtMods = jdtMods | ClassFileConstants.AccPublic
-    
+
     if(owner.hasFlag(Flags.ABSTRACT) || owner.hasFlag(Flags.DEFERRED))
       jdtMods = jdtMods | ClassFileConstants.AccAbstract
 
     if(owner.isFinal || owner.hasFlag(Flags.MODULE))
       jdtMods = jdtMods | ClassFileConstants.AccFinal
-    
+
     if(owner.isTrait)
       jdtMods = jdtMods | ClassFileConstants.AccInterface
-    
+
     /** Handle Scala's annotations that have to be mapped into Java modifiers */
     def mapScalaAnnotationsIntoJavaModifiers(): Int = {
       var mod = 0
       if(hasTransientAnn(owner)) {
         mod = mod | ClassFileConstants.AccTransient
       }
-      
+
       if(hasVolatileAnn(owner)) {
         mod = mod | ClassFileConstants.AccVolatile
       }
-      
+
       if(hasNativeAnn(owner)) {
         mod = mod | ClassFileConstants.AccNative
       }
-      
+
       if(hasStrictFPAnn(owner)) {
         mod = mod | ClassFileConstants.AccStrictfp
       }
-      
+
       if(hasDeprecatedAnn(owner)) {
         mod = mod | ClassFileConstants.AccDeprecated
       }
-      
+
       mod
     }
-      
+
     jdtMods | mapScalaAnnotationsIntoJavaModifiers()
   }
 
@@ -113,20 +113,20 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       jdtMods = jdtMods | ClassFileConstants.AccProtected
     else
       jdtMods = jdtMods | ClassFileConstants.AccPublic
-    
+
     if(owner.hasFlag(Flags.ABSTRACT) || owner.hasFlag(Flags.DEFERRED))
       jdtMods = jdtMods | ClassFileConstants.AccAbstract
 
     if(owner.isFinal || owner.hasFlag(Flags.MODULE))
       jdtMods = jdtMods | ClassFileConstants.AccFinal
-    
+
     if(owner.isTrait)
       jdtMods = jdtMods | ClassFileConstants.AccInterface
-    
+
     jdtMods
   }
 
-  
+
   def mapType(s : Symbol) : String = {
     (if(s == null || s == NoSymbol || s.isRefinementClass || s.owner.isRefinementClass)
         "scala.AnyRef"
@@ -146,28 +146,28 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       case n => n
     }
   }
-  
-  /** 
+
+  /**
    * Map a Scala `Type` that '''does not take type parameters''' into its
-   * Java representation. 
-   * A special case exists for Scala `Array` since in Java array do not take 
+   * Java representation.
+   * A special case exists for Scala `Array` since in Java array do not take
    * type parameters.
    * */
   def mapType(tpe: Type): String = {
 	val base = mapType(tpe.typeSymbol)
 	base match {
-	  case "scala.Array" => 
+	  case "scala.Array" =>
 	    val paramTypes = tpe.typeArgs.map(mapType(_))
 	    assert(paramTypes.size == 1)
         paramTypes.head + "[]"
-	  case basicTpe => 
-	    if(tpe.typeParams.nonEmpty) 
+	  case basicTpe =>
+	    if(tpe.typeParams.nonEmpty)
 	      logger.debug("mapType(Type) is not expected to be used with a type that has type parameters. (passed type was %s)".format(tpe))
 	    basicTpe
 	}
   }
-  
-  
+
+
   def mapParamTypePackageName(t : Type) : String = {
     if (t.typeSymbolDirect.isTypeParameter)
       ""
@@ -187,7 +187,7 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       case _ => false
     }
   }
-  
+
   def mapParamTypeName(t : Type) : String = {
     if (t.typeSymbolDirect.isTypeParameter)
       t.typeSymbolDirect.name.toString
@@ -201,7 +201,7 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
         mapTypeName(t.typeSymbol)
     }
   }
-  
+
   def mapParamTypeSignature(t : Type) : String = {
     if (t.typeSymbolDirect.isTypeParameter)
       "T"+t.typeSymbolDirect.name.toString+";"
@@ -216,7 +216,7 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       fjt.getSignature.replace('/', '.')
     }
   }
-  
+
   def mapTypeName(s : Symbol) : String =
     if (s == NoSymbol || s.hasFlag(Flags.PACKAGE)) ""
     else {
@@ -231,15 +231,15 @@ trait ScalaJavaMapper extends ScalaAnnotationHelper with HasLogger { self : Scal
       if (sym == NoSymbol || sym.owner.hasFlag(Flags.PACKAGE))
         Nil
       else {
-        val owner = sym.owner 
+        val owner = sym.owner
         val name0 = owner.simpleName.toString
         val name = if (owner.isModuleClass) name0+"$" else name0
         name :: enclosing(owner)
       }
-        
+
     enclosing(sym).reverse
   }
-  
+
   /** Return the enclosing package. Correctly handle the empty package, by returning
    *  the empty string, instead of <empty>. */
   def enclosingPackage(sym: Symbol): String = {

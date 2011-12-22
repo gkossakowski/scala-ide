@@ -29,14 +29,14 @@ import scala.tools.eclipse.util.EclipseUtils._
 
 object FileUtils {
   import ScalaPlugin.plugin
-  
+
   def toIFile(file: AbstractFile): Option[IFile] = file match {
     case null => None
     case EclipseResource(file: IFile) => Some(file)
     case abstractFile =>
-      
+
       val file = ResourcesPlugin.getWorkspace.getRoot.getFileForLocation(Path.fromOSString(abstractFile.path))
-      
+
       if (file == null || !file.exists) {
         None
       } else {
@@ -44,7 +44,7 @@ object FileUtils {
       }
   }
 
-  
+
   def length(file : IFile) = {
     val fs = FileBuffers.getFileStoreAtLocation(file.getLocation)
     if (fs != null)
@@ -52,44 +52,44 @@ object FileUtils {
     else
       -1
   }
-  
+
   def clearBuildErrors(file : IFile, monitor : IProgressMonitor) =
     try {
       workspaceRunnableIn(file.getWorkspace, monitor)( m => file.deleteMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE))
     } catch {
       case _ : ResourceException =>
     }
-  
+
   def clearTasks(file : IFile, monitor : IProgressMonitor) =
     try {
       workspaceRunnableIn(file.getWorkspace, monitor)(m => file.deleteMarkers(IJavaModelMarker.TASK_MARKER, true, IResource.DEPTH_INFINITE))
     } catch {
       case _ : ResourceException =>
     }
-  
+
   def findBuildErrors(file : IResource) : Seq[IMarker] =
     file.findMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE)
 
   def hasBuildErrors(file : IResource) : Boolean =
     file.findMarkers(plugin.problemMarkerId, true, IResource.DEPTH_INFINITE).exists(_.getAttribute(IMarker.SEVERITY) == IMarker.SEVERITY_ERROR)
-  
+
   def buildError(file : IFile, severity : Int, msg : String, offset : Int, length : Int, line : Int, monitor : IProgressMonitor) =
     workspaceRunnableIn(file.getWorkspace, monitor) { m =>
       val mrk = file.createMarker(plugin.problemMarkerId)
       mrk.setAttribute(IMarker.SEVERITY, severity)
-      
+
       // Marker attribute values are limited to <= 65535 bytes and setAttribute will assert if they
       // exceed this. To guard against this we trim to <= 21000 characters ... see
       // org.eclipse.core.internal.resources.MarkerInfo.checkValidAttribute for justification
       // of this arbitrary looking number
       val maxMarkerLen = 21000
       val trimmedMsg = msg.take(maxMarkerLen)
-      
+
       val attrValue = trimmedMsg.map {
         case '\n' | '\r' => ' '
         case c => c
       }
-      
+
       mrk.setAttribute(IMarker.MESSAGE , attrValue)
 
       if (offset != -1) {

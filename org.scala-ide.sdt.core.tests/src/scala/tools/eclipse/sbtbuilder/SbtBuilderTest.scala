@@ -17,22 +17,22 @@ object SbtBuilderTest extends testsetup.TestProjectSetup("builder")
 class SbtBuilderTest {
 
   import SbtBuilderTest._
-  
+
   @Test def testSimpleBuild() {
     println("building " + project)
     project.clean(new NullProgressMonitor())
     project.underlying.build(IncrementalProjectBuilder.FULL_BUILD, new NullProgressMonitor)
-    
+
     val units = List(compilationUnit("test/ja/JClassA.java"), compilationUnit("test/sc/ClassA.scala"))
     val noErrors = units.forall { unit =>
       val problems = unit.getUnderlyingResource().findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE)
       println("problems: %s: %s".format(unit, problems.toList))
       problems.isEmpty
     }
-    
+
     Assert.assertTrue("Build errors found", noErrors)
   }
-  
+
   def rebuild(prj: ScalaProject): List[IMarker] = {
     println("building " + prj)
     prj.clean(new NullProgressMonitor())
@@ -45,25 +45,25 @@ class SbtBuilderTest {
       problems
     }
   }
-  
+
   @Test @Ignore def dependencyTest() {
     object depProject extends testsetup.TestProjectSetup("builder-sub")
-    
+
     val problemsDep = rebuild(depProject.project)
     val problemsOrig = rebuild(project)
     Assert.assertTrue("Should succeed compilation", problemsOrig.isEmpty)
-    
+
     val fooCU = depProject.compilationUnit("subpack/Foo.scala")
     println("IFile: " + fooCU.getResource().getAdapter(classOf[IFile]).asInstanceOf[IFile])
     SDTTestUtils.changeContentOfFile(depProject.project.underlying, fooCU.getResource().getAdapter(classOf[IFile]).asInstanceOf[IFile], changedFooScala)
-    
+
     rebuild(depProject.project)
     val problems = rebuild(project)
-    
+
     Assert.assertEquals("Should have one problem", 1, problems.size)
     Assert.assertEquals("Error should be in FooClient.scala", problems(0).getResource(), compilationUnit("test/dependency/FooClient.scala").getResource())
   }
-  
+
   lazy val changedFooScala = """
     package subpack
 
