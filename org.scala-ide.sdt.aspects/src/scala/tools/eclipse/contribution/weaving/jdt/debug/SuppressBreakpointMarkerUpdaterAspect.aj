@@ -14,13 +14,13 @@ import org.eclipse.jface.text.Position;
 public privileged aspect SuppressBreakpointMarkerUpdaterAspect {
 
   pointcut updateMarker(BreakpointMarkerUpdater markerUpdater, IMarker marker,
-      IDocument document, Position position): 
-    args(marker, document, position) 
+      IDocument document, Position position):
+    args(marker, document, position)
     && execution(boolean BreakpointMarkerUpdater.updateMarker(IMarker, IDocument, Position))
     && target(markerUpdater);
 
   boolean around(BreakpointMarkerUpdater markerUpdater, IMarker marker,
-      IDocument document, Position position): 
+      IDocument document, Position position):
     updateMarker(markerUpdater, marker, document, position) {
     IFile resource = ((IFile) marker.getResource());
     if (resource != null && resource.getFileExtension().equals("scala"))

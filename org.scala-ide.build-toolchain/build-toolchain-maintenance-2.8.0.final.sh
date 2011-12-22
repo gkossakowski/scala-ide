@@ -12,4 +12,4 @@ ${MAVEN} \
   -P maintenance,!default \
   -Dscala.version=${SCALA_VERSION} \
   -Dscala.maintenance.version=${SCALA_MAINTENANCE_VERSION} \
-  clean install $* 
+  clean install $*

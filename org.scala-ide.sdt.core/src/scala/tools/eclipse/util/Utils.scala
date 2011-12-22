@@ -8,7 +8,7 @@ object Utils {
     f
     System.currentTimeMillis() - start
   }
-  
+
   /** Evaluate 'f' and return its value and the time required to compute it. */
   def timed[A](f: => A): (A, Long) = {
     val start = System.currentTimeMillis()

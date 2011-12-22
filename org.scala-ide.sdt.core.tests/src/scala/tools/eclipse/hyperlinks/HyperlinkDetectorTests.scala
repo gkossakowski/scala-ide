@@ -18,11 +18,11 @@ import org.junit.Ignore
 
 object HyperlinkDetectorTests extends TestProjectSetup("hyperlinks") {
   private final val HyperlinkMarker = "/*^*/"
-  
+
   case class Link(pos: Pos, length: Int, text: String)
   case class Pos(line: Int, column: Int)
-  
-  /** Load a single Scala Compilation Unit. The file contains text markers that 
+
+  /** Load a single Scala Compilation Unit. The file contains text markers that
    * will be used to trigger hyperlinking requests to the presentation compiler. */
   def loadTestUnit(path2unit: String) = {
     val unit = scalaCompilationUnit(path2unit)
@@ -31,18 +31,18 @@ object HyperlinkDetectorTests extends TestProjectSetup("hyperlinks") {
       /** @param expectations A collection of expected `Link` (test's oracle). */
       def andCheckAgainst(expectations: List[Link]) = {
         val positions = findMarker(HyperlinkMarker).in(unit)
-  
+
         println("checking %d positions".format(positions.size))
         assertEquals(positions.size, expectations.size)
         for ((pos, oracle) <- positions.zip(expectations)) {
           val wordRegion = ScalaWordFinder.findWord(unit.getContents, pos)
           val word = new String(unit.getContents.slice(wordRegion.getOffset, wordRegion.getOffset + wordRegion.getLength))
           println("hyperlinking at position %d (%s)".format(pos, word))
-          
+
           // Execute SUT
           val detector = new ScalaHyperlinkDetector
           val maybeLinks = detector.scalaHyperlinks(unit, wordRegion)
-          
+
           // Verify Expectations
           assertTrue("no links found for `%s` @ (%d,%d)".format(word, oracle.pos.line, oracle.pos.column), maybeLinks.isDefined)
           val links = maybeLinks.get
@@ -66,13 +66,13 @@ object HyperlinkDetectorTests extends TestProjectSetup("hyperlinks") {
 
 class HyperlinkDetectorTests {
   import HyperlinkDetectorTests._
-  
+
   @Test
   def simpleHyperlinks() {
     val unit = scalaCompilationUnit("hyperlinks/SimpleHyperlinking.scala")
 
     reload(unit)
-    
+
     val contents = unit.getContents
     val positions = SDTTestUtils.positionsOf(contents, "/*^*/")
 
@@ -88,7 +88,7 @@ class HyperlinkDetectorTests {
       assertEquals(1, links.get.size)
     }
   }
-  
+
   @Test
   def bug1000560() {
     val oracle = List(Link(Pos(12,10), 5, "object bug1000560.Outer"),
@@ -96,15 +96,15 @@ class HyperlinkDetectorTests {
     			      Link(Pos(12,37), 1, "value bug1000560.Outer.a"),
     			      Link(Pos(14,10), 5, "object bug1000560.Outer")
   )
-    
+
     loadTestUnit("bug1000560/Test1.scala").andCheckAgainst(oracle)
   }
-  
+
   @Test @Ignore
   def bug1000560_2() {
     val oracle = List(Link(Pos(10,10), 3, "value bug1000560.Test2.foo"),
                       Link(Pos(10,20), 3, "method bug1000560.Foo.bar"))
-    
+
     loadTestUnit("bug1000560/Test2.scala").andCheckAgainst(oracle)
   }
 }

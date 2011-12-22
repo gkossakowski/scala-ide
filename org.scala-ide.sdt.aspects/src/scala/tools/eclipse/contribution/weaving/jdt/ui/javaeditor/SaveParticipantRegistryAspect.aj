@@ -17,7 +17,7 @@ public privileged aspect SaveParticipantRegistryAspect {
   pointcut notifyPostSaveListeners(CompilationUnitDocumentProvider.CompilationUnitInfo info, IRegion[] changedRegions, IPostSaveListener[] listeners, IProgressMonitor monitor) :
     args(info, changedRegions, listeners, monitor) &&
     execution(void notifyPostSaveListeners(CompilationUnitDocumentProvider.CompilationUnitInfo, IRegion[], IPostSaveListener[], IProgressMonitor));
-  
+
   void around(CompilationUnitDocumentProvider.CompilationUnitInfo info, IRegion[] changedRegions, IPostSaveListener[] listeners, IProgressMonitor monitor) :
     notifyPostSaveListeners(info, changedRegions, listeners, monitor) {
     if (info.fElement instanceof IFileEditorInput) {

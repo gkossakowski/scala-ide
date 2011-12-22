@@ -31,12 +31,12 @@ import org.eclipse.core.resources.IResourceDelta
 
 object ScalaPlugin {
   var plugin: ScalaPlugin = _
-  
+
   def getWorkbenchWindow = {
     val workbench = PlatformUI.getWorkbench
     Option(workbench.getActiveWorkbenchWindow) orElse workbench.getWorkbenchWindows.headOption
   }
-  
+
   def getShell: Shell = getWorkbenchWindow map (_.getShell) orNull
 }
 
@@ -44,7 +44,7 @@ class ScalaPlugin extends AbstractUIPlugin with IResourceChangeListener with IEl
   ScalaPlugin.plugin = this
 
   final val HEADLESS_TEST  = "sdtcore.headless"
-  
+
   def pluginId = "org.scala-ide.sdt.core"
   def compilerPluginId = "org.scala-ide.scala.compiler"
   def libraryPluginId = "org.scala-ide.scala.library"
@@ -101,13 +101,13 @@ class ScalaPlugin extends AbstractUIPlugin with IResourceChangeListener with IEl
   val compilerClasses = pathInBundle(scalaCompilerBundle, "/lib/scala-compiler.jar")
   val continuationsClasses = pathInBundle(scalaCompilerBundle, "/lib/continuations.jar")
   val compilerSources = pathInBundle(scalaCompilerBundle, "/lib/scala-compiler-src.jar")
-  
+
   lazy val sbtCompilerBundle = Platform.getBundle(ScalaPlugin.plugin.sbtPluginId)
   lazy val sbtCompilerInterface = pathInBundle(sbtCompilerBundle, "/lib/scala-" + shortScalaVer + "/lib/compiler-interface.jar")
   // Disable for now, until we introduce a way to have multiple scala libraries, compilers available for the builder
   //lazy val sbtScalaLib = pathInBundle(sbtCompilerBundle, "/lib/scala-" + shortScalaVer + "/lib/scala-library.jar")
   //lazy val sbtScalaCompiler = pathInBundle(sbtCompilerBundle, "/lib/scala-" + shortScalaVer + "/lib/scala-compiler.jar")
-  
+
   val scalaLibBundle = {
     val bundles = Platform.getBundles(ScalaPlugin.plugin.libraryPluginId, scalaCompilerBundleVersion.toString())
     println("[scalaLibBundle] Found %d bundles: %s".format(bundles.size, bundles.toList.mkString(", ")))
@@ -116,7 +116,7 @@ class ScalaPlugin extends AbstractUIPlugin with IResourceChangeListener with IEl
       Platform.getBundle(ScalaPlugin.plugin.libraryPluginId)
     }
   }
-  
+
   val libClasses = pathInBundle(scalaLibBundle, "/lib/scala-library.jar")
   val libSources = pathInBundle(scalaLibBundle, "/lib/scala-library-src.jar")
   val dbcClasses = pathInBundle(scalaLibBundle, "/lib/scala-dbc.jar")
@@ -191,7 +191,7 @@ class ScalaPlugin extends AbstractUIPlugin with IResourceChangeListener with IEl
       case _ =>
     }
   }
-  
+
   override def elementChanged(event: ElementChangedEvent) {
     import scala.collection.mutable.ListBuffer
     val buff = new ListBuffer[ScalaSourceFile]

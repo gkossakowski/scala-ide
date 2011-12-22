@@ -16,21 +16,21 @@ import scala.tools.refactoring.implementations.AddImportStatement
 
 
 /** A UI class for displaying completion proposals.
- * 
+ *
  *  It adds parenthesis at the end of a proposal if it has parameters, and places the caret
  *  between them.
  */
-class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: ISelectionProvider) 
+class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: ISelectionProvider)
     extends IJavaCompletionProposal with ICompletionProposalExtension with ICompletionProposalExtension6 {
-  
+
   import proposal._
   import ScalaCompletionProposal._
-  
+
   def getRelevance = relevance
-  
+
   private lazy val image = {
     import MemberKind._
-    
+
     kind match {
       case Def           => defImage
       case Class         => classImage
@@ -44,21 +44,21 @@ class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: I
       case _    => valImage
     }
   }
-  
+
   def getImage = image
-  
+
   val completionString = if (hasArgs == HasArgs.NoArgs) completion else completion + "()"
-  
+
   def getContextInformation(): IContextInformation =
     if (tooltip.size > 0)
       new ScalaContextInformation(display, tooltip, image)
     else null
- 
+
   /**
    * A simple display string
    */
   def getDisplayString() = display
-  
+
   /**
    * A display string with grayed out extra details
    */
@@ -68,7 +68,7 @@ class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: I
          styledString.append(" - ", StyledString.QUALIFIER_STYLER).append(displayDetail, StyledString.QUALIFIER_STYLER)
       styledString
     }
-  
+
   /**
    * Some additional info (like javadoc ...)
    */
@@ -81,12 +81,12 @@ class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: I
     selectionProvider.setSelection(new TextSelection(startPos + completionString.length, 0))
     selectionProvider match {
       case viewer: ITextViewer if hasArgs == HasArgs.NonEmptyArgs =>
-        // obtain the relative offset in the screen (this is needed to correctly 
+        // obtain the relative offset in the screen (this is needed to correctly
         // update the caret position when folded comments/imports/classes are
         // present in the source file.
         val viewCaretOffset = viewer.getTextWidget().getCaretOffset()
         viewer.getTextWidget().setCaretOffset(viewCaretOffset -1 )
-      case _ => () 
+      case _ => ()
     }
     if (needImport) { // add an import statement if required
       // [luc] code copied from scala.tools.eclipse.quickfix.ImportCompletionProposal
@@ -102,7 +102,7 @@ class ScalaCompletionProposal(proposal: CompletionProposal, selectionProvider: I
   }
   def getTriggerCharacters = null
   def getContextInformationPosition = 0
-  def isValidFor(d: IDocument, pos: Int) = 
+  def isValidFor(d: IDocument, pos: Int) =
     prefixMatches(completion.toArray, d.get.substring(startPos, pos).toArray)
 }
 
@@ -119,6 +119,6 @@ object ScalaCompletionProposal {
   val javaInterfaceImage = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_INTERFACE)
   val javaClassImage = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_CLASS)
   val packageImage = JavaPluginImages.get(JavaPluginImages.IMG_OBJS_PACKAGE)
-  
+
   def apply(selectionProvider: ISelectionProvider)(proposal: CompletionProposal) = new ScalaCompletionProposal(proposal, selectionProvider)
 }

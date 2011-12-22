@@ -14,25 +14,25 @@ import org.eclipse.jface.preference._
 import org.eclipse.core.resources._
 
 /**
- *A wrapper around a Preference store for properties. 
+ *A wrapper around a Preference store for properties.
  */
-class PropertyStore( val project : IProject, val workbenchStore : IPreferenceStore, val pageId : String) 
+class PropertyStore( val project : IProject, val workbenchStore : IPreferenceStore, val pageId : String)
     extends PreferenceStore {
-  
-      
+
+
   lazy val projectNode : IEclipsePreferences = {
     new ProjectScope(project).getNode(pageId)
   }
   /** Returns the "default" value of a property (in this case, the workbench value) */
   override def getDefaultString(name : String ) = workbenchStore.getDefaultString(name);
   /**
-   * Pulls the value of a property as a string 
+   * Pulls the value of a property as a string
    */
   override def getString(name : String) = {
 	  insertValue(name);
 	  super.getString(name);
   }
-  
+
   override def getDefaultBoolean(name : String) = workbenchStore.getDefaultBoolean(name);
   override def getBoolean(name : String) = {
 	  insertValue(name);
@@ -58,7 +58,7 @@ class PropertyStore( val project : IProject, val workbenchStore : IPreferenceSto
 	  insertValue(name);
 	  super.getLong(name);
   }
-  
+
   private var inserting = false;
   /**
    * Inserts the value from the workbench store into the property store if needed.
@@ -66,7 +66,7 @@ class PropertyStore( val project : IProject, val workbenchStore : IPreferenceSto
   private def insertValue(name :String) : Unit = {
     /** Pulls the value of the property on the resource*/
     def getProperty(name :String ) = projectNode.get(name, null)
-    
+
     this synchronized {
       if (inserting)
 	    return;
@@ -86,12 +86,12 @@ class PropertyStore( val project : IProject, val workbenchStore : IPreferenceSto
 	  inserting = false;
     }
   }
-  
+
   /** Checks to see if we should have a property */
-  override def contains(name : String) : Boolean = { 
+  override def contains(name : String) : Boolean = {
     if(projectNode.get(name, null) == null) {
-      return workbenchStore.contains(name); 
-    } 
+      return workbenchStore.contains(name);
+    }
     true
   }
   /** Resets a property to the "default" (workbench) value */
@@ -102,23 +102,23 @@ class PropertyStore( val project : IProject, val workbenchStore : IPreferenceSto
 	  if (defaultValue == null) return false;
 	  return defaultValue.equals(getString(name));
 	}
-  
+
     /** Overrides save to work for properties */
   	override def save() : Unit =  writeProperties();
-   
+
     import java.io.OutputStream;
     import java.io.IOException;
     /** overrides save to work for properties */
 	override def save( out : OutputStream,  header : String) = writeProperties();
-	
+
     /** This will save out our properties */
 	private def writeProperties() : Unit = {
-	  
+
 	  //Helper method to actually set properties
 	  def setProperty(name : String, value : String) = {
 	    projectNode.put(name, value)
       }
-	  
+
 	  val preferences = super.preferenceNames();
 	  preferences foreach  { preference :String =>
 	    try {
@@ -127,7 +127,7 @@ class PropertyStore( val project : IProject, val workbenchStore : IPreferenceSto
 	      case e : CoreException => throw new IOException("Cannot write resource property " + preference);
 	    }
 	  }
-   
+
       projectNode.flush
 	}
 

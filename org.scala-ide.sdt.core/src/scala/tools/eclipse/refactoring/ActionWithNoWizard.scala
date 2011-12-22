@@ -16,9 +16,9 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog
 /**
  * This trait can be mixed in to a RefactoringAction if the refactoring
  * should be performed without showing the wizard and the change preview.
- * 
+ *
  * If an error occurs during preparation, the wizard is shown with the
- * error message. 
+ * error message.
  */
 trait ActionWithNoWizard {
   this: RefactoringAction =>
@@ -28,26 +28,26 @@ trait ActionWithNoWizard {
   override def run(action: IAction) {
     runRefactoringInUiJob()
   }
-  
+
   def runRefactoringInUiJob() {
     runInUiJob { (pm, shell) =>
       createScalaIdeRefactoringForCurrentEditorAndSelection() match {
         case Some(refactoring: ScalaIdeRefactoring) =>
           val status = refactoring.checkInitialConditions(pm)
-          
+
           if(status.hasError || status.hasWarning) {
             runRefactoring(createWizardForRefactoring(Some(refactoring)), shell)
           } else {
             refactoring.createChange(pm).perform(pm)
           }
-        case _ => 
+        case _ =>
           runRefactoring(new ErrorRefactoringWizard("An error occurred while creating the refactoring."), shell)
       }
-      
+
       Status.OK_STATUS
     }
   }
-  
+
   def runInUiJob(block: (IProgressMonitor, Shell) => IStatus) {
     new UIJob("Refactoring") {
       def runInUIThread(pm: IProgressMonitor): IStatus = {
@@ -55,13 +55,13 @@ trait ActionWithNoWizard {
       }
     }.schedule
   }
-  
+
   def runInProgressDialog(block: IProgressMonitor => Unit) {
-    
+
     val runnable = new IRunnableWithProgress {
       def run(pm: IProgressMonitor) = block(pm)
     }
-    
+
     val dialog = new ProgressMonitorDialog(PlatformUI.getWorkbench.getActiveWorkbenchWindow.getShell)
     dialog.run(false /*run in ui thread!*/, true /*cancelable*/, runnable)
   }

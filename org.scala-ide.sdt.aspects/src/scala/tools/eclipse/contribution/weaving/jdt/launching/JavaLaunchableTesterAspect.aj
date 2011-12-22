@@ -17,7 +17,7 @@ public privileged aspect JavaLaunchableTesterAspect {
     execution(boolean JavaLaunchableTester.hasMain(IJavaElement)) &&
     target(jlt) &&
     args(element);
-  
+
   boolean around(JavaLaunchableTester jlt, IJavaElement element) :
     hasMain(jlt, element) {
     try {

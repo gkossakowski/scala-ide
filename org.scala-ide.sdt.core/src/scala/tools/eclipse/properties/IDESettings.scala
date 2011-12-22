@@ -31,10 +31,10 @@ object IDESettings {
       Box("Presentation Compiler",
         List(YpresentationDebug, YpresentationVerbose, YpresentationLog, YpresentationReplay, YpresentationDelay)))
   }
-  
+
   def pluginSettings: List[Box] =
     List(Box("Scala Plugin Debugging", List(YPlugininfo)))
-  
+
   def buildManagerSettings: List[Box] =
     List(Box("Build manager", List(buildManager)))
 }

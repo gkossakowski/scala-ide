@@ -16,18 +16,18 @@ public class JavaSelectAnnotationRulerActionUtils {
   private static final Method initializeMethod;
   private static final Method hasMarkersMethod;
   private static final Method setEnabledMethod;
-  
+
   static {
     Class<?> raClazz = ResourceAction.class;
     initializeMethod = ReflectionUtils.getMethod(raClazz, "initialize", ResourceBundle.class, String.class);
-    
+
     Class<?> smraClazz = SelectMarkerRulerAction.class;
     hasMarkersMethod = ReflectionUtils.getMethod(smraClazz, "hasMarkers");
 
     Class<?> aClazz = Action.class;
     setEnabledMethod = ReflectionUtils.getMethod(aClazz, "setEnabled", boolean.class);
   }
-  
+
   public static void initialize(JavaSelectAnnotationRulerAction jsara, ResourceBundle bundle, String prefix) {
     try {
       initializeMethod.invoke(jsara, bundle, prefix);

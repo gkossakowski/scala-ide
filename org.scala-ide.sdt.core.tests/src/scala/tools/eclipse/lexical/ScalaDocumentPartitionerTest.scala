@@ -8,16 +8,16 @@ import org.eclipse.jface.text._
 class ScalaDocumentPartitionerTest {
 
   @Test
-  def no_partition_change {	
+  def no_partition_change {
     //       000000000011111111112222222222333333333344444444445
-    //       012345678901234567890123456789012345678901234567890 
+    //       012345678901234567890123456789012345678901234567890
     check("""/* comment */ "foo" /* comment */""", Replace(start = 5, finish = 7, text = "foo"), expectedNoRegion)
   }
-	
+
   @Test
   def modify_single_partition {
     //       000000000011111111112222222222333333333344444444445
-    //       012345678901234567890123456789012345678901234567890 
+    //       012345678901234567890123456789012345678901234567890
     check("""/* comment */ "foo" /* comment */""", Insertion(point = 16, text = "XXX"), expectedNoRegion)
     check("""/* comment */ "foo" /* comment *//* comment */""", Replace(start = 14, finish = 18, text = "/* */"), expectedRegion(14, 5))
   }
@@ -25,7 +25,7 @@ class ScalaDocumentPartitionerTest {
   @Test
   def delete_partition_at_start_and_end_of_file {
     //       000000000011111111112222222222333333333344444444445
-    //       012345678901234567890123456789012345678901234567890 
+    //       012345678901234567890123456789012345678901234567890
     check("""/* comment */ 42""", Deletion(start = 0, finish = 12), expectedRegion(0, 0))
     check("""/* comment */ 42""", Deletion(start = 0, finish = 15), expectedRegion(0, 0))
     check("""/* comment */ 42""", Deletion(start = 13, finish = 15), expectedRegion(13, 0))
@@ -54,9 +54,9 @@ class ScalaDocumentPartitionerTest {
   }
 
   case class Replace(start: Int, finish: Int, text: String) extends Replacement {
-	  def docEvent(implicit doc: IDocument): DocumentEvent = new DocumentEvent(doc, start, finish - start + 1, text) 
+	  def docEvent(implicit doc: IDocument): DocumentEvent = new DocumentEvent(doc, start, finish - start + 1, text)
   }
-  
+
   case class Deletion(start: Int, finish: Int) extends Replacement {
     def docEvent(implicit doc: IDocument): DocumentEvent = new DocumentEvent(doc, start, finish - start + 1, "")
   }

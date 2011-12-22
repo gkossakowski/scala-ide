@@ -16,16 +16,16 @@ public privileged aspect SearchAspect {
     execution(boolean MatchLocator.parseAndBuildBindings(PossibleMatch, boolean)) &&
     target(ml) &&
     args(possibleMatch, mustResolve);
-  
+
   pointcut process(MatchLocator ml, PossibleMatch possibleMatch, boolean bindingsWereCreated) :
     execution(void MatchLocator.process(PossibleMatch, boolean)) &&
     target(ml) &&
     args(possibleMatch, bindingsWereCreated);
-  
+
   pointcut getSourceFileName(PossibleMatch pm) :
     execution(String getSourceFileName()) &&
     target(pm);
-    
+
   boolean around(MatchLocator ml, PossibleMatch possibleMatch, boolean mustResolve) throws CoreException :
     parseAndBuildBindings(ml, possibleMatch, mustResolve) {
     if (!(possibleMatch.openable instanceof IScalaCompilationUnit))
@@ -38,7 +38,7 @@ public privileged aspect SearchAspect {
     ml.matchesToProcess[ml.numberOfMatches++] = possibleMatch;
     return false;
   }
-  
+
   void around(MatchLocator ml, PossibleMatch possibleMatch, boolean bindingsWereCreated) throws CoreException :
     process(ml, possibleMatch, bindingsWereCreated) {
     if (possibleMatch.openable instanceof IScalaCompilationUnit)

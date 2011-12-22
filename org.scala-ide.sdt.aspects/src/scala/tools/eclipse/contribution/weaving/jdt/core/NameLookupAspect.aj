@@ -44,7 +44,7 @@ public privileged aspect NameLookupAspect {
       topLevelTypeName,
       acceptFlags,
       requestor);
-       
+
   void around(
     NameLookup nl,
     String name,
@@ -82,7 +82,7 @@ public privileged aspect NameLookupAspect {
               continue;
             IType type = ((ICompilationUnit) cu).getType(topLevelTypeName);
             type = nl.getMemberType(type, name, firstDot);
-            if ((isScala && (type instanceof IScalaElement) && type.exists()) || 
+            if ((isScala && (type instanceof IScalaElement) && type.exists()) ||
                 (!isScala && nl.acceptType(type, acceptFlags, true/*a source type*/))) { // accept type checks for existence unless cu is Scala
               requestor.acceptType(type);
               break;  // since an exact match was requested, no other matching type can exist

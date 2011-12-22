@@ -20,13 +20,13 @@ class ScalaOccurrencesFinder(file: ScalaCompilationUnit, offset: Int, length: In
           lazy val index = GlobalIndex(global.body(sourceFile))
         }
 
-        if (!compiler.unitOfFile.contains(sourceFile.file)) 
-          None 
+        if (!compiler.unitOfFile.contains(sourceFile.file))
+          None
         else {
-          val (selectedTree, occurrences) = mo.occurrencesOf(sourceFile.file, from, to)       
-          
+          val (selectedTree, occurrences) = mo.occurrencesOf(sourceFile.file, from, to)
+
           Option(selectedTree.symbol) filter (!_.name.isOperatorName) map { sym =>
-            val locations = occurrences map { pos => 
+            val locations = occurrences map { pos =>
               new Region(pos.start, pos.end - pos.start)
             }
             Occurrences(sym.nameString, locations)

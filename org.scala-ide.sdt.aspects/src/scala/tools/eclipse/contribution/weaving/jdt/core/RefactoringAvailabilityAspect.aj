@@ -39,7 +39,7 @@ public aspect RefactoringAvailabilityAspect {
   pointcut getJavaElements(Object[] elements) :
     execution(static IJavaElement[] RefactoringAvailabilityTester.getJavaElements(Object[])) &&
     args(elements);
-  
+
   pointcut getResources2(List elements) :
     execution(static IResource[] ReorgUtils.getResources(List)) &&
     args(elements);
@@ -47,7 +47,7 @@ public aspect RefactoringAvailabilityAspect {
   pointcut getJavaElements2(List elements) :
     execution(static IJavaElement[] ReorgUtils.getJavaElements(List)) &&
     args(elements);
-  
+
   pointcut getResource(IStructuredSelection selection) :
     execution(static IResource RenameResourceAction.getResource(IStructuredSelection)) &&
     args(selection);
@@ -60,15 +60,15 @@ public aspect RefactoringAvailabilityAspect {
       for(Iterator i = ((IStructuredSelection)arg).iterator(); i.hasNext();)
         if (i.next() instanceof IScalaElement)
           return false;
-     
+
     return proceed(arg);
   }
-  
+
   boolean around(IResource[] resources, IJavaElement[] elements) :
     isAvailable2(resources, elements) {
     if (elements == null || elements.length == 0)
       return proceed(resources, elements);
-    
+
     int numElements = elements.length;
     boolean hasScalaElement = false;
     for (int i = 0; i < numElements; ++i)
@@ -76,16 +76,16 @@ public aspect RefactoringAvailabilityAspect {
         hasScalaElement = true;
         break;
       }
-    
+
     if (!hasScalaElement)
       return proceed(resources, elements);
-    
+
     List newElements = new ArrayList();
-    
+
     List newResources = new ArrayList();
     if (resources != null)
       newResources.addAll(Arrays.asList(resources));
-    
+
     for (int i = 0; i < numElements; ++i) {
       IJavaElement elem = elements[i];
       if (elem instanceof IScalaElement) {
@@ -104,12 +104,12 @@ public aspect RefactoringAvailabilityAspect {
       (IResource[])newResources.toArray(new IResource[newResources.size()]),
       (IJavaElement[])newElements.toArray(new IJavaElement[newElements.size()]));
   }
-  
+
   IResource[] around(Object[] elements) :
     getResources(elements) {
     List result= new ArrayList();
     for (int index= 0; index < elements.length; index++) {
-      Object elem = elements[index]; 
+      Object elem = elements[index];
       if (elem instanceof IResource)
         result.add(elem);
       else if (elem instanceof IScalaElement) {
@@ -129,18 +129,18 @@ public aspect RefactoringAvailabilityAspect {
     getJavaElements(elements) {
     List result= new ArrayList();
     for (int index= 0; index < elements.length; index++) {
-      Object elem = elements[index]; 
+      Object elem = elements[index];
       if ((elem instanceof IJavaElement) && !(elem instanceof IScalaElement))
         result.add(elem);
     }
     return (IJavaElement[]) result.toArray(new IJavaElement[result.size()]);
   }
-  
+
   IResource[] around(List elements) :
     getResources2(elements) {
     List result= new ArrayList();
     for (Iterator i = elements.iterator(); i.hasNext(); ) {
-      Object elem = i.next(); 
+      Object elem = i.next();
       if (elem instanceof IResource)
         result.add(elem);
       else if (elem instanceof IScalaElement) {
@@ -160,7 +160,7 @@ public aspect RefactoringAvailabilityAspect {
     getJavaElements2(elements) {
     List result= new ArrayList();
     for (Iterator i = elements.iterator(); i.hasNext(); ) {
-      Object elem = i.next(); 
+      Object elem = i.next();
       if ((elem instanceof IJavaElement) && !(elem instanceof IScalaElement))
         result.add(elem);
     }

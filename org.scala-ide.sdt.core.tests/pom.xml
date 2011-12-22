@@ -8,7 +8,7 @@
   </parent>
   <artifactId>org.scala-ide.sdt.core.tests</artifactId>
   <packaging>eclipse-test-plugin</packaging>
-  
+
   <profiles>
     <profile>
       <id>Mac OS</id>
@@ -71,7 +71,7 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
-    
+
   <build>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
@@ -93,14 +93,14 @@
             <jvmArg>-Xmx1024m</jvmArg>
           </jvmArgs>
         </configuration>
-      </plugin>  
+      </plugin>
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-surefire-plugin</artifactId>
         <version>${tycho.version}</version>
         <configuration>
           <useUIHarness>false</useUIHarness>
-          <useUIThread>false</useUIThread> 
+          <useUIThread>false</useUIThread>
 
           <!-- Enable JDT weaving -->
           <systemProperties combine.children="append">

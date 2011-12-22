@@ -24,7 +24,7 @@ import scala.tools.eclipse.util.EclipseFile
 
 object ScalaSourceFile {
   val handleFactory = new HandleFactory
-  
+
   def createFromPath(path : String) : Option[ScalaSourceFile] = {
     if (!path.endsWith(".scala"))
       None
@@ -36,12 +36,12 @@ object ScalaSourceFile {
   }
 }
 
-class ScalaSourceFile(fragment : PackageFragment, elementName: String, workingCopyOwner : WorkingCopyOwner) 
+class ScalaSourceFile(fragment : PackageFragment, elementName: String, workingCopyOwner : WorkingCopyOwner)
   extends JDTCompilationUnit(fragment, elementName, workingCopyOwner) with ScalaCompilationUnit with IScalaSourceFile {
 
   override def getMainTypeName : Array[Char] =
     getElementName.substring(0, getElementName.length - ".scala".length).toCharArray()
-  
+
   override def scheduleReconcile = {
     Display.getDefault.asyncExec(new Runnable { def run = JavaModelUtil.reconcile(ScalaSourceFile.this) })
   }
@@ -70,7 +70,7 @@ class ScalaSourceFile(fragment : PackageFragment, elementName: String, workingCo
 
   override def getProblemRequestor = getPerWorkingCopyInfo
 
-  override lazy val file : AbstractFile = { 
+  override lazy val file : AbstractFile = {
     val res = try { getCorrespondingResource } catch { case _ => null }
     res match {
       case f : IFile => new EclipseFile(f)
@@ -82,6 +82,6 @@ class ScalaSourceFile(fragment : PackageFragment, elementName: String, workingCo
     val problems = compiler.problemsOf(this)
     if (problems.isEmpty) null else problems.toArray
   } (null)
-  
+
   override def getType(name : String) : IType = new LazyToplevelClass(this, name)
 }

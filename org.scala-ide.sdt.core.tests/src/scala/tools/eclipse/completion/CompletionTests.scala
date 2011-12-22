@@ -43,25 +43,25 @@ class CompletionTests {
       tree.get
 
       val contents = unit.getContents
-      // mind that the space in the marker is very important (the presentation compiler 
-      // seems to get lost when the position where completion is asked 
+      // mind that the space in the marker is very important (the presentation compiler
+      // seems to get lost when the position where completion is asked
       val positions = SDTTestUtils.positionsOf(contents, " /*!*/")
       val content = unit.getContents.mkString
-      
+
       val completion = new ScalaCompletions
       for (i <- 0 until positions.size) yield {
-        val pos = positions(i) 
-        
+        val pos = positions(i)
+
         val position = new scala.tools.nsc.util.OffsetPosition(src, pos)
         var wordRegion = ScalaWordFinder.findWord(content, position.offset.get)
-        
-        
+
+
 //        val selection = mock(classOf[ISelectionProvider])
-        
+
         /* FIXME:
-         * I would really love to call `completion.computeCompletionProposals`, but for some unclear 
-         * reason that call is not working. Some debugging shows that the position is not right (off by one), 
-         * however, increasing the position makes the computed `wordRegion` wrong... hard to understand where 
+         * I would really love to call `completion.computeCompletionProposals`, but for some unclear
+         * reason that call is not working. Some debugging shows that the position is not right (off by one),
+         * however, increasing the position makes the computed `wordRegion` wrong... hard to understand where
          * the bug is!
         val textViewer = mock(classOf[ITextViewer])
         when(textViewer.getSelectionProvider()).thenReturn(selection)
@@ -73,46 +73,46 @@ class CompletionTests {
         import collection.JavaConversions._
         val completions: List[ICompletionProposal] = completion.computeCompletionProposals(context, monitor).map(_.asInstanceOf[ICompletionProposal]).toList
         */
-        
+
         var completions = completion.findCompletions(wordRegion)(pos+1, unit)(src, compiler)
-        
+
         if (!withImportProposal)
           completions= completions.filter((c) => !c.needImport)
-        
-        // remove parens as the compiler trees' printer has been slightly modified in 2.10 
+
+        // remove parens as the compiler trees' printer has been slightly modified in 2.10
         // (and we need the test to pass for 2.9.0/-1 and 2.8.x as well).
         val completionsNoParens: List[String] = completions.map(_.display.replace("(","").replace(")","")).sorted
         val expectedNoParens: List[String] = expectedCompletions(i).map(_.replace("(","").replace(")","")).sorted
-        
+
         println("Found following completions @ position %d (%d,%d):".format(pos, position.line, position.column))
         completionsNoParens.foreach(e => println("\t" + e))
         println()
-        
+
         println("Expected completions:")
         expectedNoParens.foreach(e => println("\t" + e))
         println()
-        
+
         assertTrue("Found %d completions @ position %d (%d,%d), Expected %d"
             .format(completionsNoParens.size, pos, position.line, position.column, expectedNoParens.size),
             completionsNoParens.size == expectedNoParens.size) // <-- checked condition
-            
+
         completionsNoParens.zip(expectedNoParens).foreach {
-          case (found, expected) =>  
+          case (found, expected) =>
             assertTrue("Found `%s`, expected `%s`".format(found, expected), found == expected)
         }
       }
     }()
   }
-  
+
   @Test
   def ticket1000475() {
     val oraclePos73 = List("toString(): java.lang.String")
     val oraclePos116 = List("forallChar => Boolean: Boolean")
     val oraclePos147 = List("forallChar => Boolean: Boolean")
-        
+
     runTest("ticket_1000475/Ticket1000475.scala", false)(oraclePos73, oraclePos116, oraclePos147)
   }
-  
+
   /**
    * Test completion for 'any' Java type visible in the project
    */
@@ -124,5 +124,5 @@ class CompletionTests {
 
     runTest("ticket_1000476/Ticket1000476.scala", true)(oraclePos4_26, oraclePos6_33, oraclePos11_16)
   }
-  
+
 }

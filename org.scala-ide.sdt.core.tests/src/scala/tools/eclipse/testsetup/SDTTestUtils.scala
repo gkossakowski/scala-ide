@@ -15,16 +15,16 @@ import scala.util.matching.Regex
 import org.eclipse.core.runtime.NullProgressMonitor
 
 /** Utility functions for setting up test projects.
- *  
+ *
  *  @author Miles Sabin
  */
 object SDTTestUtils {
-  
+
   lazy val sourceWorkspaceLoc = {
     val bundle= Platform.getBundle("org.scala-ide.sdt.core.tests")
     OSGiUtils.pathInBundle(bundle, File.separatorChar + "test-workspace").get
   }
-  
+
   lazy val workspace = ResourcesPlugin.getWorkspace
 
   /** Setup the project in the target workspace. The 'name' project should
@@ -44,15 +44,15 @@ object SDTTestUtils {
     }
     ScalaPlugin.plugin.getScalaProject(workspace.getRoot.getProject(name))
   }
-  
-  /** Return all positions (offsets) of the given str in the given source file. 
+
+  /** Return all positions (offsets) of the given str in the given source file.
    */
   def positionsOf(source: Array[Char], str: String): Seq[Int] = {
     val buf = new mutable.ListBuffer[Int]
     var pos = source.indexOfSlice(str)
     while (pos >= 0) {
       buf += pos - 1 // we need the position before the first character of this marker
-      pos = source.indexOfSlice(str, pos + 1) 
+      pos = source.indexOfSlice(str, pos + 1)
     }
     buf.toList
   }
@@ -68,11 +68,11 @@ object SDTTestUtils {
     for (m <- it) {
       buf += ((it.start, it.group(1).toInt))
     }
-    
+
     buf.toSeq
   }
 
-  
+
   def deleteRecursive(d : File) {
     if (d.exists) {
       val filesOpt = Option(d.listFiles)

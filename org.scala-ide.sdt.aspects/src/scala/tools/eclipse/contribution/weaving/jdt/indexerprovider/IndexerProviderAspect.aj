@@ -15,11 +15,11 @@ import scala.tools.eclipse.contribution.weaving.jdt.ScalaJDTWeavingPlugin;
 @SuppressWarnings("restriction")
 public aspect IndexerProviderAspect {
 
-  pointcut indexDocument(SearchDocument document, IPath indexPath) : 
+  pointcut indexDocument(SearchDocument document, IPath indexPath) :
     execution(public void JavaSearchParticipant.indexDocument(SearchDocument, IPath)) &&
     args(document, indexPath);
 
-  void around(SearchDocument document, IPath indexPath) : 
+  void around(SearchDocument document, IPath indexPath) :
     indexDocument(document, indexPath) {
 
     String path = document.getPath();

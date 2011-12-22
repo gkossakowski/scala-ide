@@ -33,7 +33,7 @@ object EclipseUtils {
   implicit def asEclipseTextEdit(edit: TextEdit): EclipseTextEdit = new ReplaceEdit(edit.position, edit.length, edit.replacement)
 
   /** Run the given function as a workspace runnable inside `wspace`.
-   * 
+   *
    * @param wspace the workspace
    * @param monitor the progress monitor (defaults to null for no progress monitor).
    */

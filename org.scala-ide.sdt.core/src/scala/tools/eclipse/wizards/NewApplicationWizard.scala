@@ -22,7 +22,7 @@ class NewApplicationWizard extends NewResourceWizard {
   override protected def postFinish(project : ScalaProject, file : IFile) = {
     super.postFinish(project, file)
     val pkgName = this.pkg.getElementName
-    val pkgPrefix = if (pkgName == "") "" else pkgName + "." 
+    val pkgPrefix = if (pkgName == "") "" else pkgName + "."
     val toRun =  pkgPrefix + this.name
     val launchName = DebugPlugin.getDefault.getLaunchManager().generateUniqueLaunchConfigurationNameFrom(toRun)
     val launchType = DebugPlugin.getDefault().getLaunchManager().getLaunchConfigurationType(ScalaPlugin.plugin.launchTypeId)
@@ -33,7 +33,7 @@ class NewApplicationWizard extends NewResourceWizard {
     val groups = new scala.collection.mutable.ArrayBuffer[AnyRef]
     groups += IDebugUIConstants.ID_RUN_LAUNCH_GROUP
     wc.setAttribute(IDebugUIConstants.ATTR_FAVORITE_GROUPS, groups)
-	      
+
     val config = wc.doSave
     assert(config != null)
     //config.launch(ILaunchManager.RUN_MODE, null)

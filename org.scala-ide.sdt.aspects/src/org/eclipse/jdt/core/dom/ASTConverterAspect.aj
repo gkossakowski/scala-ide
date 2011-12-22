@@ -1,12 +1,12 @@
 /**
- * 
+ *
  */
 //package scala.tools.eclipse.contribution.weaving.jdt.core;
 package org.eclipse.jdt.core.dom;
 
 /**
  * This class is the package org.eclipse.jdt.core.dom, because ASTConverter is not public.
- * 
+ *
  * @author Matthew Farwell
  *
  */
@@ -25,7 +25,7 @@ public privileged aspect ASTConverterAspect {
      if (name == null || name.length == 0) {
        return false;
      }
-     
+
        switch(name[0]) {
            case 'i' :
                if (name.length == 3 && name[1] == 'n' && name[2] == 't') {

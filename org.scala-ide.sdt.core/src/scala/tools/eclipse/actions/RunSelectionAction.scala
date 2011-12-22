@@ -19,24 +19,24 @@ class RunSelectionAction extends ActionDelegate with IWorkbenchWindowActionDeleg
   def init(window: IWorkbenchWindow) {
     workbenchWindow = window
   }
-     
+
   def doCast[T](obj: Any): Option[T] = {
     obj match {
       case t: T => Some(t)
       case _ => None
     }
   }
-  
+
   override def run(action: IAction) {
 
     for (editor <- Option(workbenchWindow.getActivePage.getActiveEditor);
         input <- doCast[IFileEditorInput](editor.getEditorInput);
         textEditor <- doCast[ITextEditor](editor);
-        selection <- doCast[ITextSelection](textEditor.getSelectionProvider.getSelection)) 
+        selection <- doCast[ITextSelection](textEditor.getSelectionProvider.getSelection))
     {
       val project = input.getFile.getProject
       var text = selection.getText
-      
+
       if (text.isEmpty) {
         val provider = textEditor.getDocumentProvider
         provider.connect(input)
@@ -46,23 +46,23 @@ class RunSelectionAction extends ActionDelegate with IWorkbenchWindowActionDeleg
           val lineOffset = document.getLineOffset(selection.getStartLine)
           val lineLength = document.getLineLength(selection.getStartLine)
           text = document.get(lineOffset, lineLength)
-        } 
+        }
         finally {
           provider.disconnect(input)
         }
       }
-             
+
       if (!text.isEmpty) {
         val scalaProject = ScalaPlugin.plugin.getScalaProject(project)
-        
+
         val viewPart = workbenchWindow.getActivePage.showView(
-            "org.scala-ide.sdt.core.consoleView", scalaProject.underlying.getName, 
+            "org.scala-ide.sdt.core.consoleView", scalaProject.underlying.getName,
             IWorkbenchPage.VIEW_VISIBLE)
         val replView = viewPart.asInstanceOf[interpreter.ReplConsoleView]
         replView setScalaProject scalaProject
-       
+
         val repl = interpreter.EclipseRepl.replForProject(scalaProject, replView)
-        repl.interpret(text)        
+        repl.interpret(text)
       }
     }
   }

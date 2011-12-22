@@ -14,12 +14,12 @@ public privileged aspect ScalaCloseStringsAspect {
   pointcut setCloseStringsEnabled(boolean enabled) :
     args(enabled) &&
     execution(void CompilationUnitEditor.BracketInserter.setCloseStringsEnabled(boolean));
-  
+
   pointcut invocations(IScalaEditor editor) :
     target(editor) &&
     (execution(void CompilationUnitEditor.createPartControl(Composite)) ||
      execution(void CompilationUnitEditor.handlePreferenceStoreChanged(PropertyChangeEvent)));
-  
+
   void around(IScalaEditor editor, boolean enabled) :
     setCloseStringsEnabled(enabled) && cflow(invocations(editor)) {
     proceed(editor, false);

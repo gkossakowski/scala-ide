@@ -18,27 +18,27 @@ object OccurrencesFinderTest extends TestProjectSetup("occurrences-hyperlinking"
 
 class OccurrencesFinderTest {
   import OccurrencesFinderTest._
-  
+
   @Ignore("Test works locally but failes almost every times on hudson (oddly enough, only when compiling trunk)")
   @Test def typeOccurrences() {
     val unit = compilationUnit("occ/DummyOccurrences.scala").asInstanceOf[ScalaCompilationUnit];
-    
+
     // first, 'open' the file by telling the compiler to load it
     project.withSourceFile(unit) { (src, compiler) =>
       val dummy = new Response[Unit]
       compiler.askReload(List(src), dummy)
       dummy.get
-      
+
       val tree =  new Response[compiler.Tree]
       compiler.askType(src, false,tree)
       tree.get
     }()
-    
+
     val contents = unit.getContents
     val positions = SDTTestUtils.markersOf(contents, "<")
-    
+
     println("checking %d positions".format(positions.size))
-    
+
     for ((pos, count) <- positions) {
       println("looking at position %d for %d occurrences".format(pos, count))
       val region = ScalaWordFinder.findWord(contents, pos - 1)

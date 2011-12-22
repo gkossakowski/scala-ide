@@ -60,50 +60,50 @@ public privileged aspect DOMAspect {
     execution(ASTNode ASTParser.internalCreateAST(IProgressMonitor)) &&
     args(monitor) &&
     target(parser);
-  
+
   pointcut convert(SourceTypeConverter stc, SourceMethod methodHandle, SourceMethodElementInfo methodInfo, CompilationResult compilationResult) :
     execution(AbstractMethodDeclaration SourceTypeConverter.convert(SourceMethod, SourceMethodElementInfo, CompilationResult)) &&
     args(methodHandle, methodInfo, compilationResult) &&
     target(stc);
-/*  
+/*
   ASTNode around(ASTParser parser, IProgressMonitor monitor) :
     internalCreateAST(parser, monitor) {
     try {
       if (!(parser.typeRoot instanceof IScalaCompilationUnit))
         return proceed(parser, monitor);
-      
+
       ICompilationUnit cu = (ICompilationUnit)parser.typeRoot;
       org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit = (org.eclipse.jdt.internal.compiler.env.ICompilationUnit)cu;
-      
+
       IType[] topLevelTypes = cu.getTypes();
       int length = topLevelTypes.length;
       if (length == 0)
         throw new IllegalStateException();
-      
+
       SourceTypeElementInfo[] topLevelInfos = new SourceTypeElementInfo[length];
       for (int i = 0; i < length; i++) {
         topLevelInfos[i] = (SourceTypeElementInfo) ((SourceType)topLevelTypes[i]).getElementInfo();
       }
       char[] fileName = ((ISourceType)topLevelInfos[0]).getFileName();
-      
+
       CompilationResult result = new CompilationResult(fileName, 1, 1, 100);
 
-      JavaProject javaProject = (JavaProject)cu.getJavaProject(); 
+      JavaProject javaProject = (JavaProject)cu.getJavaProject();
       Map compilerOptions0 = javaProject.getOptions(true);
       CompilerOptions compilerOptions = new CompilerOptions(compilerOptions0);
       compilerOptions.storeAnnotations = true;
-      
+
       ProblemReporter problemReporter =
         new ProblemReporter(
           DefaultErrorHandlingPolicies.proceedWithAllProblems(),
           compilerOptions,
           new DefaultProblemFactory(Locale.getDefault()));
-      
+
       int flags = SourceTypeConverter.FIELD_AND_METHOD | SourceTypeConverter.MEMBER_TYPE;
-      
+
       CompilationUnitDeclaration unit =
         SourceTypeConverter.buildCompilationUnit(topLevelInfos, flags, problemReporter, result);
-      
+
       INameEnvironment ne = javaProject.newSearchableNameEnvironment(DefaultWorkingCopyOwner.PRIMARY);
       final LookupEnvironment le = new LookupEnvironment(null, compilerOptions, problemReporter, ne);
       ITypeRequestor typeRequestor = new ITypeRequestor() {
@@ -114,18 +114,18 @@ public privileged aspect DOMAspect {
         public void accept(ISourceType[] sourceType, PackageBinding packageBinding, AccessRestriction accessRestriction) {}
       };
       le.typeRequestor = typeRequestor;
-      
+
       le.buildTypeBindings(unit, null);
       le.completeTypeBindings();
       fixTypes(unit.types);
-      
+
       AST ast = AST.newAST(AST.JLS3);
       ast.setFlag(AST.RESOLVED_BINDINGS);
       ast.setDefaultNodeFlag(ASTNode.ORIGINAL);
 
       org.eclipse.jdt.core.dom.ASTConverter converter =
         new org.eclipse.jdt.core.dom.ASTConverter(compilerOptions0, true, monitor);
-      
+
       org.eclipse.jdt.core.dom.BindingResolver resolver =
         new org.eclipse.jdt.core.dom.DefaultBindingResolver(
           unit.scope,
@@ -134,14 +134,14 @@ public privileged aspect DOMAspect {
           true);
       ast.setBindingResolver(resolver);
       converter.setAST(ast);
-      
+
       ASTNode node = converter.convert(unit, sourceUnit.getContents());
       return node;
     } catch (JavaModelException ex) {
       throw new IllegalArgumentException(ex);
     }
   }
-  
+
   private void fixTypes(TypeDeclaration[] types) {
     for(int i = 0, iLimit = types.length; i < iLimit ; ++i) {
       TypeDeclaration tpe = types[i];
@@ -157,11 +157,11 @@ public privileged aspect DOMAspect {
       }
     }
   }*/
-  
+
   private void fixMethods(AbstractMethodDeclaration[] methods) {
     if (methods == null)
       return;
-    
+
     for(int i = 0, iLimit = methods.length; i < iLimit; ++i) {
       AbstractMethodDeclaration m = methods[i];
       m.bodyStart = m.declarationSourceStart;
@@ -171,11 +171,11 @@ public privileged aspect DOMAspect {
       }
     }
   }
-  
+
   private void fixFields(AbstractVariableDeclaration[] fields) {
     if (fields == null)
       return;
-    
+
     for(int i = 0, iLimit = fields.length; i < iLimit; ++i) {
       AbstractVariableDeclaration f = fields[i];
       f.declarationEnd = f.declarationSourceEnd;
@@ -305,7 +305,7 @@ public privileged aspect DOMAspect {
       for (int i = 0; i < childrenLength; ++i)
         if (children[i] instanceof SourceType)
           ++typesLength;
-      
+
       if (typesLength != 0) {
         Statement[] statements = new Statement[typesLength];
         int typeIndex = 0;

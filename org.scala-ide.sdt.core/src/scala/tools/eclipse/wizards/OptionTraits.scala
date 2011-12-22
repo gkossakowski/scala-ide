@@ -1,13 +1,13 @@
 /*
  * Copyright 2010 LAMP/EPFL
- * 
+ *
  * @author Tim Clendenen
- * 
+ *
  */
 package scala.tools.eclipse.wizards
 
 import org.eclipse.jdt.core.ICompilationUnit
-import org.eclipse.jdt.internal.ui.wizards.dialogfields.{ DialogField, 
+import org.eclipse.jdt.internal.ui.wizards.dialogfields.{ DialogField,
 	SelectionButtonDialogFieldGroup }
 
 import org.eclipse.jface.dialogs.IDialogSettings
@@ -15,7 +15,7 @@ import org.eclipse.jface.dialogs.IDialogSettings
 import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.widgets.Composite
 
-trait ClassOptions extends AbstractNewElementWizardPage { 
+trait ClassOptions extends AbstractNewElementWizardPage {
 
   def initializeOptions(dialogSettings: IDialogSettings) {
 	var createConstructors = false
@@ -31,14 +31,14 @@ trait ClassOptions extends AbstractNewElementWizardPage {
 
 	methodStubButtons.enableSelectionButton(0, false)
 	methodStubButtons.setSelection(0, false)
-	
+
 	methodStubButtons.enableSelectionButton(1, true)
 	methodStubButtons.setSelection(1, createConstructors)
-	
+
 	methodStubButtons.enableSelectionButton(2, true)
 	methodStubButtons.setSelection(2, createUnimplemented)
   }
-  
+
   def specifyModifierControls(composite: Composite, columns: Int) {
     DialogField.createEmptySpace(composite)
     val control = otherModifierButtons.getSelectionButtonsGroup(composite)
@@ -67,23 +67,23 @@ trait ObjectOptions extends AbstractNewElementWizardPage {
 
 	methodStubButtons.enableSelectionButton(0, true)
 	methodStubButtons.setSelection(0, createMain)
-	
+
 	methodStubButtons.enableSelectionButton(1, false)
 	methodStubButtons.setSelection(1, createConstructors)
-	
+
 	methodStubButtons.enableSelectionButton(2, true)
 	methodStubButtons.setSelection(2, createUnimplemented)
   }
 
   def specifyModifierControls(composite: Composite, columns: Int) {}
-  
+
   override protected def getGeneratedTypeName = super.getGeneratedTypeName+"$"
 }
 
-trait PackageObjectOptions extends AbstractNewElementWizardPage { 
+trait PackageObjectOptions extends AbstractNewElementWizardPage {
 
   accessModifierButtons.setEnabled(false)
-  
+
   def initializeOptions(dialogSettings: IDialogSettings) {
 	var createMain = false
 	var createConstructors = false
@@ -100,16 +100,16 @@ trait PackageObjectOptions extends AbstractNewElementWizardPage {
 
 	methodStubButtons.enableSelectionButton(0, false)
 	methodStubButtons.setSelection(0, createMain)
-	
+
 	methodStubButtons.enableSelectionButton(1, false)
 	methodStubButtons.setSelection(1, createConstructors)
-	
+
 	methodStubButtons.enableSelectionButton(2, true)
 	methodStubButtons.setSelection(2, createUnimplemented)
   }
 
   def specifyModifierControls(composite: Composite, columns: Int) {}
-  
+
   override protected def getGeneratedTypeName = "package$"
 }
 
@@ -126,14 +126,14 @@ trait TraitOptions { self: AbstractNewElementWizardPage =>
 
 	methodStubButtons.enableSelectionButton(0, false)
 	methodStubButtons.setSelection(0, false)
-	
+
 	methodStubButtons.enableSelectionButton(1, false)
 	methodStubButtons.setSelection(1, false)
-	
+
 	methodStubButtons.enableSelectionButton(2, true)
 	methodStubButtons.setSelection(2, createUnimplemented)
   }
-	  
+
   def specifyModifierControls(composite: Composite, columns: Int) {}
 }
 

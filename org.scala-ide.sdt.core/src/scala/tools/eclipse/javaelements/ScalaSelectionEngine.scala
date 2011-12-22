@@ -48,7 +48,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
         else {
           (region.getOffset, if (region.getLength > 0) region.getOffset + region.getLength - 1 else region.getOffset)
         }
-      
+
       val wordStart = region.getOffset
 
       actualSelectionStart = selectionStart
@@ -64,7 +64,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
       class Cont(f: () => Unit) {
         def apply() = f()
       }
-      
+
       object Cont {
         def apply(next: => Unit) = new Cont({ () => next })
         val Noop = new Cont(() => ())
@@ -176,7 +176,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
         typedRes.left.toOption match {
           case Some(tree) => {
             tree match {
-              case i: compiler.Ident => 
+              case i: compiler.Ident =>
                 i.symbol match {
                   case c: compiler.ClassSymbol  => acceptType(c)
                   case m: compiler.ModuleSymbol => acceptType(m)
@@ -195,7 +195,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
                   case _ => Cont.Noop
                 }
 
-              case s: compiler.Select if s.symbol != null && s.symbol != NoSymbol => 
+              case s: compiler.Select if s.symbol != null && s.symbol != NoSymbol =>
                 val sym = s.symbol
                 if (sym.hasFlag(Flags.JAVA)) {
                   if (sym.isModule || sym.isClass)
@@ -213,7 +213,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
                   acceptType(sym)
                 } else
                   acceptMethod(sym)
-              
+
               case a@compiler.Annotated(atp, _) =>
                 acceptTypeWithFlags(atp.symbol, ClassFileConstants.AccAnnotation)
 
@@ -237,8 +237,8 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
                       Cont.Noop
                   }
                 }
-                
-                val sym = selectors find (_.namePos >= wordStart) map {sel => 
+
+                val sym = selectors find (_.namePos >= wordStart) map {sel =>
                   val tpe = stabilizedType(expr)
                   // Only look for java type, scala symbols are handled in ScalaHyperlinkDetector.
                   tpe.member(sel.name.toTypeName)
@@ -262,7 +262,7 @@ class ScalaSelectionEngine(nameEnvironment: SearchableEnvironment, requestor: IS
             Cont.Noop
         }
       } getOrElse Cont.Noop
-      
+
       cont()
 
       if (!ssr.hasSelection) {

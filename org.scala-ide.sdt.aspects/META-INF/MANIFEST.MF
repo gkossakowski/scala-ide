@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.scala-ide.sdt.aspects;singleton:=true
 Bundle-Version: 2.1.0.qualifier
 Bundle-Vendor: scala-ide.org
 Bundle-Activator: scala.tools.eclipse.contribution.weaving.jdt.ScalaJDTWeavingPlugin
-Require-Bundle: 
+Require-Bundle:
  org.aspectj.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.runtime,
@@ -23,7 +23,7 @@ Require-Bundle:
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.jdt.debug.ui,
  org.aspectj.runtime
-Eclipse-SupplementBundle: 
+Eclipse-SupplementBundle:
  org.eclipse.debug.core,
  org.eclipse.jdt.core,
  org.eclipse.jdt.debug.ui,
@@ -31,7 +31,7 @@ Eclipse-SupplementBundle:
  org.eclipse.jdt.ui,
  org.eclipse.pde.ui
 Bundle-ActivationPolicy: lazy
-Export-Package: 
+Export-Package:
  scala.tools.eclipse.contribution.weaving.jdt,
  scala.tools.eclipse.contribution.weaving.jdt.builderoptions,
  scala.tools.eclipse.contribution.weaving.jdt.cfprovider,

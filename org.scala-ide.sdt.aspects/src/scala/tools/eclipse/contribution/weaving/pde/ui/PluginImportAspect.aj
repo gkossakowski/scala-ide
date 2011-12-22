@@ -15,7 +15,7 @@ public privileged aspect PluginImportAspect {
   pointcut folderContainsFileExtension(IImportStructureProvider provider, Object element, String fileExtension) :
     execution(private static boolean PluginImportHelper.folderContainsFileExtension(IImportStructureProvider, Object, String)) &&
     args(provider, element, fileExtension);
-    
+
   boolean around(IImportStructureProvider provider, Object element, String fileExtension) :
     folderContainsFileExtension(provider, element, fileExtension) {
       return !".java".equals(fileExtension) ? proceed(provider, element, fileExtension) : folderContainsSourceExtension(provider, element);
@@ -31,7 +31,7 @@ public privileged aspect PluginImportAspect {
             return true;
           }
         } else {
-          String label = provider.getLabel(curr); 
+          String label = provider.getLabel(curr);
           if (label.endsWith(".java") || label.endsWith(".scala") || label.endsWith(".aj")) {
             return true;
           }

@@ -12,7 +12,7 @@ import org.eclipse.jface.preference.IPreferenceStore
 case class ScalaSyntaxClass(displayName: String, baseName: String) {
 
   import ScalaSyntaxClasses._
-  
+
   def colourKey = baseName + COLOUR_SUFFIX
   def boldKey = baseName + BOLD_SUFFIX
   def italicKey = baseName + ITALIC_SUFFIX

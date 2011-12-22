@@ -26,7 +26,7 @@ private object SbtConverter {
 	private[this] def o[T](t: Option[T]): Option[T] = t
 	private[this] def o[T](t: T): Option[T] = Some(t)
 
-	
+
 	def convertToSbt(posIn: Position): xsbti.Position =
 	{
 		val pos =
@@ -104,20 +104,20 @@ private object SbtConverter {
 private class SbtBuildReporter(underlying: BuildReporter) extends xsbti.Reporter {
   import scala.tools.nsc.util.{BatchSourceFile, OffsetPosition}
   import scala.tools.nsc.io.AbstractFile
-  
+
   def toXsbtProblem(p: BuildProblem): xsbti.Problem =
     new xsbti.Problem {
       def severity() = SbtConverter.convertToSbt(p.severity, underlying)
       def message() = p.msg
       def position() = SbtConverter.convertToSbt(p.pos)
     }
-	
+
 	implicit def toScalaPosition(pos0: xsbti.Position): Position = {
 	  val srcpath0 = pos0.sourcePath()
 	  val srcfile0 = pos0.sourceFile()
 	  val offset0 = pos0.offset()
 	  (srcpath0.isDefined(), srcfile0.isDefined(), offset0.isDefined()) match {
-	    case (false, false, false) => 
+	    case (false, false, false) =>
 	      NoPosition
 	    case _ =>
 	      val ifile = EclipseResource.fromString(srcpath0.get)
@@ -127,11 +127,11 @@ private class SbtBuildReporter(underlying: BuildReporter) extends xsbti.Reporter
 	        case Some(ifile0) =>
 	          val sourceFile = new BatchSourceFile(ifile0)
 	          val offset = offset0.get.intValue
-	          new OffsetPosition(sourceFile, offset)	          
+	          new OffsetPosition(sourceFile, offset)
 	      }
 	  }
 	}
-	
+
 	def reset() =	underlying.reset
 	def hasErrors() = underlying.hasErrors
 	def hasWarnings() = underlying.hasWarnings
@@ -171,8 +171,8 @@ class SbtBuildLogger(underlying: BuildReporter) extends EclipseLogger {
 	    case Debug => ()
 	  }
 	}
-	
-		
+
+
 	// This will at least ensure that we print log in the order required by eclipse for java problems
 	// This is a temporary solution until the parsing of java error/warning messages is done correctly
 	def flush() {
@@ -190,7 +190,7 @@ class SbtBuildLogger(underlying: BuildReporter) extends EclipseLogger {
 	  var lastLevel: sbt.Level.Value = null
 	  buff0.foreach(msg => {
 	    val res = msg._2 match { case javaErrorBegin(_) => true; case _ => false }
-	    
+
 	    if ((msg._1 != lastLevel || res) && !localBuff.isEmpty) {
 	      assert(lastLevel != null)
 	      publishMsg(lastLevel, localBuff.mkString("\n"))
@@ -206,14 +206,14 @@ class SbtBuildLogger(underlying: BuildReporter) extends EclipseLogger {
 
 class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
   extends EclipseBuildManager {
-  
+
   var monitor: SubMonitor = _
-  
+
   class SbtProgress extends Controller {
 	  private var lastWorked = 0
 	  private var savedTotal = 0
 	  private var throttledMessages = 0
-	
+
 	  // Direct copy of the mechanism in the refined build managers
 	  def runInformUnitStarting(phaseName: String, unitPath: String) {
 	    throttledMessages += 1
@@ -224,8 +224,8 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
 	      monitor.subTask("phase " + phaseName + " for " + unitIPath.makeRelativeTo(projectPath))
 	    }
 	  }
-	  
-	  def runProgress(current: Int, total: Int): Boolean = 
+
+	  def runProgress(current: Int, total: Int): Boolean =
 	    if (monitor.isCanceled) {
 	      false
 	    } else {
@@ -233,7 +233,7 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
 	        monitor.setWorkRemaining(total - savedTotal)
 	        savedTotal = total
 	      }
-	
+
 	      if (lastWorked < current) {
 	        monitor.worked(current - lastWorked)
 	        lastWorked = current
@@ -241,15 +241,15 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
 	      true
 	    }
   }
-	
+
 	/** Not supported */
 	val compiler = null
 	var depFile: IFile = null
-	
+
 	private[sbtintegration] lazy val _buildReporter = new BuildReporter(project, settings0) {
 		val buildManager = EclipseSbtBuildManager.this
 	}
-	
+
 	lazy val reporter: xsbti.Reporter = new SbtBuildReporter(_buildReporter)
 	val pendingSources = new mutable.HashSet[IFile]
 
@@ -258,35 +258,35 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
 	 */
 	private def filterOutScalaJars(l: Seq[IPath]): (Seq[IPath], Option[IPath]) = {
 		val jars = l.partition(p => p.lastSegment() == ScalaCompilerConf.LIBRARY_SUFFIX || p.lastSegment() == ScalaCompilerConf.COMPILER_SUFFIX)
-		
-		// make sure the library file exists on disk. You can have several scala-library.jar entries in 
+
+		// make sure the library file exists on disk. You can have several scala-library.jar entries in
 		// the classpath, coming from MANIFEST.MF (ClassPath: entry) expansion of other jars.
 		// Such jars may not exist on disk, though.
 		(jars._2, jars._1.find(p => p.lastSegment() == ScalaCompilerConf.LIBRARY_SUFFIX && p.toFile().exists()))
 	}
-	
+
 	lazy val scalaVersion = {
 	  // For the moment fixed to 2.9.0
 	  ScalaPlugin.plugin.scalaVer
 	}
-	
+
   def compilers(settings: Settings, libJar: File, compJar:File, compInterfaceJar: File): (ScalaSbtCompiler, JavaEclipseCompiler) = {
     val scalacInstance = ScalaCompilerConf(scalaVersion, libJar, compJar, compInterfaceJar)
     val scalac = new ScalaSbtCompiler(settings,
             scalacInstance,
-            ClasspathOptions.auto, 
+            ClasspathOptions.auto,
             reporter)
     //val javac = JavaCompiler.directOrFork(scalac.cp, scalac.scalaInstance)( (args: Seq[String], log: sbt.Logger) => Process("javac", args) ! log )
     val javac = new JavaEclipseCompiler(project.underlying, monitor)
     (scalac, javac)
   }
-  
+
   //implicit val conLogger = sbt.ConsoleLogger()
   implicit val sbtBuildLogger = new SbtBuildLogger(_buildReporter)
   implicit def toFile(files: mutable.Set[AbstractFile]): Seq[File] = files.map(_.file).toSeq
   implicit def toFile(files: scala.collection.Set[AbstractFile]): Seq[File] = files.map(_.file).toSeq
-  
-  
+
+
   private val sources: mutable.Set[AbstractFile] = mutable.Set.empty
 
   /** Add the given source files to the managed build process. */
@@ -315,7 +315,7 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
       runCompiler(sources)
     }
   }
-  
+
   private def runCompiler(sources: Seq[File]) {
       // setup the settings
   	  val allJarsAndLibrary = filterOutScalaJars(project.classpath)
@@ -335,25 +335,25 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
   	  val compJar = ScalaPlugin.plugin.compilerClasses
   	  // TODO pull the actual version from properties and select the correct one
   	  val compInterfaceJar = ScalaPlugin.plugin.sbtCompilerInterface
-  	  
+
       val (scalac, javac) = compilers(settings0, libJar, compJar.get.toFile, compInterfaceJar.get.toFile)
       // read settings properly
       //val cp = disintegrateClasspath(settings.classpath.value)
       val cp = allJarsAndLibrary._1.map(_.toFile)
       val conf = new BasicConfiguration(
               project, Seq(scalac.scalaInstance.libraryJar, compInterfaceJar.get.toFile) ++ cp)
-      
+
       val analysisComp = new AnalysisCompile(conf, this, new SbtProgress())
       val result = analysisComp.doCompile(
               scalac, javac, sources, reporter, settings0)
   }
-  
+
   /** Not supported */
   def loadFrom(file: AbstractFile, toFile: String => AbstractFile) : Boolean = true
-  
+
   /** Not supported */
   def saveTo(file: AbstractFile, fromFile: AbstractFile => String) {}
-	
+
   def clean(implicit monitor: IProgressMonitor) {
     val dummy = new BasicConfiguration(project, Seq())
     dummy.cacheLocation.refreshLocal(IResource.DEPTH_ZERO, null)
@@ -362,9 +362,9 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
   }
   def invalidateAfterLoad: Boolean = true
 
-  
+
   private def unbuilt: Set[AbstractFile] = Set.empty // TODO: this should be taken care of
-  
+
   def build(addedOrUpdated : Set[IFile], removed : Set[IFile], pm: SubMonitor) {
     _buildReporter.reset()
     pendingSources ++= addedOrUpdated
@@ -383,7 +383,7 @@ class EclipseSbtBuildManager(project: ScalaProject, settings0: Settings)
     if (!hasErrors)
       pendingSources.clear
   }
-  
+
   override def buildingFiles(included: scala.collection.Set[AbstractFile]) {
     for(file <- included) {
       file match {

@@ -55,10 +55,10 @@ class AbstractMethodVerifierTest {
   def t1000594_neg_ErrorsAreDisplayedInJavaEditor_If_JavaClass_IsSubtypeOf_ScalaAbstractClass_ThatInherithedFromATraitWithOnlyConcreteMembers() {
     //when
     val unit = compilationUnit("t1000594_neg/C.java")
-    
+
     val requestor = mock(classOf[IProblemRequestor])
     when(requestor.isActive()).thenReturn(true)
-    
+
     val owner = new WorkingCopyOwner() {
       override def getProblemRequestor(unit: org.eclipse.jdt.core.ICompilationUnit): IProblemRequestor = requestor
     }

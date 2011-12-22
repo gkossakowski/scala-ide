@@ -27,17 +27,17 @@ class ScalaQuickFixProcessor extends IQuickFixProcessor {
   private val typeNotFoundError = new Regex("not found: type (.*)")
   private val valueNotFoundError = new Regex("not found: value (.*)")
   private val xxxxxNotFoundError = new Regex("not found: (.*)")
-  
+
   /**
    * Checks if the processor has any corrections.
-   * 
+   *
    * Currently this always returns true. At some point it may be worthwhile
    * to expend some effort on implementing this properly to make the plug-in
    * slightly more responsive.
    */
   def hasCorrections(unit : ICompilationUnit, problemId : Int) : Boolean = true
 
-  
+
   /**
    * Collects corrections or code manipulations for the given context.
    *
@@ -64,11 +64,11 @@ class ScalaQuickFixProcessor extends IQuickFixProcessor {
       }
       case _ => null
   }
-  
+
   private def getAnnotationsAtOffset(part: IEditorPart, offset: Int): List[Annotation] = {
-	  import ScalaQuickFixProcessor._ 
-	  
-	  var ret = List[Annotation]() 
+	  import ScalaQuickFixProcessor._
+
+	  var ret = List[Annotation]()
 	  val model = JavaUI.getDocumentProvider().getAnnotationModel(part.getEditorInput())
 	  val iter = model.getAnnotationIterator
 	  while (iter.hasNext()) {
@@ -84,7 +84,7 @@ class ScalaQuickFixProcessor extends IQuickFixProcessor {
   def suggestFix(compilationUnit : ICompilationUnit, problemMessage : String) : List[IJavaCompletionProposal] = {
     /**
      * Import a type could solve several error message :
-     * 
+     *
      * * "not found : type  Xxxx"
      * * "not found : value Xxxx" in case of java static constant/method like Xxxx.ZZZZ or Xxxx.zzz()
      * * "not found : Xxxx" in case of new Xxxx.eee (IMO (davidB) a better suggestion is to insert (), to have new Xxxx().eeee )
@@ -98,7 +98,7 @@ class ScalaQuickFixProcessor extends IQuickFixProcessor {
         new ImportCompletionProposal(typeFound.getFullyQualifiedName)
       } toList
     }
-    
+
     return problemMessage match {
       case typeNotFoundError(missingType) => suggestImportType(missingType)
       case valueNotFoundError(missingValue) => suggestImportType(missingValue)

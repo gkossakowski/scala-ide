@@ -13,24 +13,24 @@ import org.osgi.framework.BundleContext;
 public class ScalaJDTWeavingPlugin extends Plugin
 {
   private static ScalaJDTWeavingPlugin INSTANCE;
-  
+
   public static String ID = "org.scala-ide.sdt.aspects"; //$NON-NLS-1$
-  
+
   public ScalaJDTWeavingPlugin() {
       super();
       INSTANCE = this;
   }
 
-  
+
   public static void logException(Throwable t) {
       INSTANCE.getLog().log(new Status(IStatus.ERROR, ID, t.getMessage(), t));
   }
-  
-  
+
+
   public static ScalaJDTWeavingPlugin getInstance() {
       return INSTANCE;
   }
-  
+
   @Override
   public void start(BundleContext context) throws Exception {
       super.start(context);

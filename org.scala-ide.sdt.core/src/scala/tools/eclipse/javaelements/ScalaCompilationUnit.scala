@@ -38,24 +38,24 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
   val project = ScalaPlugin.plugin.getScalaProject(getJavaProject.getProject)
 
   val file : AbstractFile
-  
+
   private var lastCrash: Throwable = null
 
   def doWithSourceFile(op : (SourceFile, ScalaPresentationCompiler) => Unit) {
     project.withSourceFile(this)(op)(())
   }
-  
+
   def withSourceFile[T](op : (SourceFile, ScalaPresentationCompiler) => T)(orElse: => T = project.defaultOrElse) : T = {
     project.withSourceFile(this)(op)(orElse)
   }
-  
+
   override def bufferChanged(e : BufferChangedEvent) {
     if (!e.getBuffer.isClosed)
       project.doWithPresentationCompiler(_.askReload(this, getContents))
 
     super.bufferChanged(e)
   }
-  
+
   def createSourceFile : BatchSourceFile = {
     new BatchSourceFile(file, getContents)
   }
@@ -67,7 +67,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       val unsafeElements = newElements.asInstanceOf[JMap[AnyRef, AnyRef]]
       val tmpMap = new java.util.HashMap[AnyRef, AnyRef]
       val sourceLength = sourceFile.length
-      
+
       try {
         println("[%s] buildStructure for %s".format(project.underlying.getName(), this.getResource()))
         compiler.withStructure(sourceFile) { tree =>
@@ -76,11 +76,11 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
           }
         }
         info match {
-          case cuei : CompilationUnitElementInfo => 
+          case cuei : CompilationUnitElementInfo =>
             cuei.setSourceLength(sourceLength)
           case _ =>
         }
-    
+
         unsafeElements.putAll(tmpMap)
         info.setIsStructureKnown(true)
       } catch {
@@ -88,8 +88,8 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
           Thread.currentThread().interrupt()
           println("ignored InterruptedException in build structure")
           info.setIsStructureKnown(false)
-          
-        case ex => 
+
+        case ex =>
           if (lastCrash != ex) {
             lastCrash = ex
             ScalaPlugin.plugin.logError("Compiler crash while building structure for %s".format(sourceFile), ex)
@@ -100,7 +100,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
     }) (false)
 
   def scheduleReconcile : Unit = ()
-  
+
   def addToIndexer(indexer : ScalaSourceIndexer) {
     doWithSourceFile { (source, compiler) =>
       compiler.withParseTree(source) { tree =>
@@ -108,7 +108,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       }
     }
   }
-  
+
   def newSearchableEnvironment(workingCopyOwner : WorkingCopyOwner) : SearchableEnvironment = {
     val javaProject = getJavaProject.asInstanceOf[JavaProject]
     javaProject.newSearchableNameEnvironment(workingCopyOwner)
@@ -116,7 +116,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
 
   def newSearchableEnvironment() : SearchableEnvironment =
     newSearchableEnvironment(DefaultWorkingCopyOwner.PRIMARY)
-  
+
   override def getSourceElementAt(pos : Int) : IJavaElement = {
     getChildAt(this, pos) match {
       case smie : ScalaModuleInstanceElement => smie.getParent;
@@ -124,15 +124,15 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       case elem => elem
     }
   }
-  
+
   def getChildAt(element: IJavaElement, pos: Int): IJavaElement = {
-    /* companion-class can be selected instead of the object in the JDT-'super' 
+    /* companion-class can be selected instead of the object in the JDT-'super'
        implementation and make the private method and fields unreachable.
        To avoid this, we look for deepest element containing the position
      */
-    
+
     def depth(e: IJavaElement): Int = if (e == element) 0 else (depth(e.getParent()) + 1)
-    
+
     element match {
       case parent: IParent => {
         var resultElement= element
@@ -159,7 +159,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       case elem => elem
     }
   }
-    
+
   override def codeSelect(cu : env.ICompilationUnit, offset : Int, length : Int, workingCopyOwner : WorkingCopyOwner) : Array[IJavaElement] = {
     Array.empty
   }
@@ -167,15 +167,15 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
   def codeComplete
     (cu : env.ICompilationUnit, unitToSkip : env.ICompilationUnit,
      position : Int,  requestor : CompletionRequestor, owner : WorkingCopyOwner, typeRoot : ITypeRoot) {
-     codeComplete(cu, unitToSkip, position, requestor, owner, typeRoot, null) 
+     codeComplete(cu, unitToSkip, position, requestor, owner, typeRoot, null)
   }
-    
+
   override def codeComplete
     (cu : env.ICompilationUnit, unitToSkip : env.ICompilationUnit,
      position : Int,  requestor : CompletionRequestor, owner : WorkingCopyOwner, typeRoot : ITypeRoot,
      monitor : IProgressMonitor) {
   }
-  
+
   override def reportMatches(matchLocator : MatchLocator, possibleMatch : PossibleMatch) {
     doWithSourceFile { (sourceFile, compiler) =>
       compiler.withStructure(sourceFile) { tree =>
@@ -185,7 +185,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       }
     }
   }
-  
+
   override def createOverrideIndicators(annotationMap : JMap[_, _]) {
     doWithSourceFile { (sourceFile, compiler) =>
       try {
@@ -201,7 +201,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       }
     }
   }
-  
+
   override def getImageDescriptor = {
     Option(getCorrespondingResource) map { file =>
       import ScalaImages.{ SCALA_FILE, EXCLUDED_SCALA_FILE }
@@ -209,9 +209,9 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
       if (javaProject.isOnClasspath(file)) SCALA_FILE else EXCLUDED_SCALA_FILE
     } orNull
   }
-  
+
   override def getScalaWordFinder() : IScalaWordFinder = ScalaWordFinder
-  
+
   def followReference(editor : ITextEditor, selection : ITextSelection) = {
     val region = new IRegion {
       def getOffset = selection.getOffset
@@ -219,7 +219,7 @@ trait ScalaCompilationUnit extends Openable with env.ICompilationUnit with Scala
     }
     new ScalaHyperlinkDetector().detectHyperlinks(editor, region, false) match {
       case Array(hyp) => hyp.open
-      case _ =>  
+      case _ =>
     }
   }
 }
