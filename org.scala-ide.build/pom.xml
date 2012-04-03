@@ -267,7 +267,7 @@
           <id>scala-refactoring-trunk</id>
           <name>Scala Refactoring Scala trunk p2 repository</name>
           <layout>p2</layout>
-          <url>${repo.scala-ide}/scala-refactoring-trunk</url>
+          <url>${repo.scala-ide}/repos/nightly-refactoring-master-trunk/repo-20120220-042026</url>
           <!-- <url>http://scala.ifs.hsr.ch/hudson/job/Scala-Refactoring-2.9.0-SNAPSHOT/ws/org.scala-refactoring.update-site/target/site/repo/</url> -->
           <snapshots><enabled>false</enabled></snapshots>
         </repository>
@@ -275,7 +275,7 @@
           <id>scalariform-trunk</id>
           <name>Scalariform Scala trunk p2 repo</name>
           <layout>p2</layout>
-          <url>${repo.scala-ide}/scalariform-trunk</url>
+          <url>${repo.scala-ide}/repos/nightly-scalariform-master-trunk/repo-20120220-042124</url>
         </repository>
         <repository>
           <id>scala-toolchain-trunk</id>
