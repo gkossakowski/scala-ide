@@ -32,6 +32,8 @@ class SbtInputs(sourceFiles: Seq[File], project: ScalaProject, javaMonitor: SubM
         }
     def progress = Maybe.just(scalaProgress)
     def reporter = scalaReporter
+    def incrementalCompilerOptions: java.util.Map[String, String] = 
+      sbt.inc.IncOptions.toStringMap(sbt.inc.IncOptions.Default.copy(apiDebug = true))
   }
 
   def options = new Options {
