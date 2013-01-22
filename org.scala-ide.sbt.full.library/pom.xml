@@ -103,6 +103,11 @@
       <artifactId>sbinary_${sbt.compiled.version}</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>com.googlecode.java-diff-utils</groupId>
+      <artifactId>diffutils</artifactId>
+      <version>1.2.1</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -141,7 +146,7 @@
             <!-- put a '-' after the sbt.version since it already has a '-scalaide-01' qualifier. Remove it the qualifier is gone. -->
             <Bundle-Version>${sbt.version}-${version.suffix}-${maven.build.timestamp}</Bundle-Version>
             <Embed-Dependency>*;scope=compile|runtime;inline=false</Embed-Dependency>
-            <_exportcontents>sbt.*;version=${sbt.version},xsbt.*;version=${sbt.version},xsbti.*;version=${sbt.version},sbinary.*;version=${sbinary.version},jline.*;version=0.9.94,org.apache.ivy.*;version=2.2.0</_exportcontents>
+            <_exportcontents>sbt.*;version=${sbt.version},xsbt.*;version=${sbt.version},xsbti.*;version=${sbt.version},sbinary.*;version=${sbinary.version},jline.*;version=0.9.94,org.apache.ivy.*;version=2.2.0,difflib.*;version=1.2.1</_exportcontents>
             <Embed-Directory>lib</Embed-Directory>
             <Embed-StripVersion>true</Embed-StripVersion>
             <Import-Package>!org.apache.ivy.*,!org.bouncycastle.*,!org.scalatools.testing.*,!com.craft.*,!com.jcraft.*,!sun.misc,!org.apache.commons.vfs,!org.apache.commons.vfs.impl,!org.apache.oro.text,!org.apache.oro.text
