@@ -169,4 +169,23 @@ class ScalaSourceViewerConfiguration(store: IPreferenceStore, scalaPreferenceSto
 
    override def affectsTextPresentation(event: PropertyChangeEvent) = true
 
+   import org.eclipse.jface.text.source.IAnnotationHover
+   import org.eclipse.jface.text.source.Annotation
+   override def getAnnotationHover(sourceViewer: ISourceViewer): IAnnotationHover = {
+		new org.eclipse.jdt.internal.ui.text.HTMLAnnotationHover(false) {
+			protected override def isIncluded(annotation: Annotation): Boolean = {
+				isShowInVerticalRuler(annotation);
+			}
+
+			protected override def formatSingleMessage(message: String): String = {
+			  import org.eclipse.jface.internal.text.html.HTMLPrinter
+			  val buffer = new StringBuffer();
+		      HTMLPrinter.addPageProlog(buffer);
+		      HTMLPrinter.addParagraph(buffer, "<pre>" + message + "</pre>");
+		      HTMLPrinter.addPageEpilog(buffer);
+		      return buffer.toString();
+			}
+		}
+	}
+
 }
