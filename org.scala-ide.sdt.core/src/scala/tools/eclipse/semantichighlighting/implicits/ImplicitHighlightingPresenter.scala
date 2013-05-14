@@ -195,7 +195,7 @@ object ImplicitHighlightingPresenter {
       val txt = new String(sourceFile.content, originalTree.pos.startOrPoint, 
           math.max(0, originalTree.pos.endOrPoint - originalTree.pos.startOrPoint)).trim()
       val expandedStr = t.toString
-      val annotation = new MacroExpansionAnnotation("Macro expansion found: " + txt + DisplayStringSeparator + txt + expandedStr)
+      val annotation = new MacroExpansionAnnotation("Macro expansion found: " + txt + DisplayStringSeparator + expandedStr)
       val pos = mkPosition(originalTree.pos, txt)
       (annotation, pos)
     }
