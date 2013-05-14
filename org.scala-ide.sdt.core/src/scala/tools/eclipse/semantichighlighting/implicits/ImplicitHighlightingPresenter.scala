@@ -187,6 +187,18 @@ object ImplicitHighlightingPresenter {
       val pos = mkPosition(t.pos, txt)
       (annotation, pos)
     }
+    
+    def mkMacroExpansionAttachment(t: Tree) = {
+      assert(t.attachments.get[compiler.MacroExpansionAttachment].isDefined)
+      val Some(macroExpansionAttachment) = t.attachments.get[compiler.MacroExpansionAttachment]
+      val originalTree = macroExpansionAttachment.original
+      val txt = new String(sourceFile.content, originalTree.pos.startOrPoint, 
+          math.max(0, originalTree.pos.endOrPoint - originalTree.pos.startOrPoint)).trim()
+      val expandedStr = t.toString
+      val annotation = new MacroExpansionAnnotation("Macro expansion found: " + txt + DisplayStringSeparator + txt + expandedStr)
+      val pos = mkPosition(originalTree.pos, txt)
+      (annotation, pos)
+    }
 
     var implicits = Map[Annotation, Position]()
 
@@ -198,6 +210,9 @@ object ImplicitHighlightingPresenter {
             implicits += (annotation -> pos)
           case v: ApplyToImplicitArgs if !pluginStore.getBoolean(ImplicitsPreferencePage.P_CONVERSIONS_ONLY) =>
             val (annotation, pos) = mkImplicitArgumentAnnotation(v)
+            implicits += (annotation -> pos)
+          case v if v.attachments.get[compiler.MacroExpansionAttachment].isDefined =>
+            val (annotation, pos) = mkMacroExpansionAttachment(v)
             implicits += (annotation -> pos)
           case _ =>
         }

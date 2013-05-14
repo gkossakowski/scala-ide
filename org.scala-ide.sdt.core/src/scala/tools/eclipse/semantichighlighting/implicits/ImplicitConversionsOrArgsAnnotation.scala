@@ -19,6 +19,8 @@ class ImplicitConversionAnnotation(_sourceLink: () => Option[IHyperlink], text: 
 
 class ImplicitArgAnnotation(text: String) extends ImplicitAnnotation(text)
 
+class MacroExpansionAnnotation(text: String) extends ImplicitAnnotation(text)
+
 class ImpliticAnnotationTextStyleStrategy(var fontStyle: Int) extends AnnotationPainter.ITextStyleStrategy {
 
   // `applyTextStyle` is called by the AnnotatinPainter when the text is painted,
