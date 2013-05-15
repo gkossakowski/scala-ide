@@ -65,6 +65,7 @@ class ScalaQuickAssistProcessor extends org.eclipse.jdt.ui.text.java.IQuickAssis
       (problemMessage match {
         case ImplicitConversionFound(s) => List(new ImplicitConversionExpandingProposal(s, location))
         case ImplicitArgFound(s)        => List(new ImplicitArgumentExpandingProposal(s, location))
+        case MacroExpansionFound(s)     => List(new MacroExpandingProposal(s, location))
         case _                          => Nil
       })
   }
@@ -74,5 +75,7 @@ object ScalaQuickAssistProcessor {
   private final val ImplicitConversionFound = "(?s)Implicit conversions found: (.*)".r
 
   private final val ImplicitArgFound = "(?s)Implicit arguments found: (.*)".r
+  import scala.tools.eclipse.semantichighlighting.implicits.ImplicitHighlightingPresenter.DisplayStringSeparator
+  private final val MacroExpansionFound = ( "(?s)Macro expansion found: (.*)").r
 }
 

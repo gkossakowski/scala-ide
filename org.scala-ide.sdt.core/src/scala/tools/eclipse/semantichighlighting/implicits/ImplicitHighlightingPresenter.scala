@@ -118,14 +118,17 @@ class ImplicitHighlightingPresenter(sourceViewer: ISourceViewer) extends Semanti
   //TODO monitor P_ACTIVATE to remove existings annotation (true => false) or update openning file (false => true)
   override def apply(scu: ScalaCompilationUnit): Unit = {
     scu.doWithSourceFile { (sourceFile, compiler) =>
-      var annotationsToAdd = Map[Annotation, Position]()
+      var implicitAnnotationsToAdd = Map[Annotation, Position]()
+      var macroAnnotationsToAdd = Map[Annotation, Position]()
 
       if (pluginStore.getBoolean(P_ACTIVE)) {
         val response = new compiler.Response[compiler.Tree]
         compiler.askLoadedTyped(sourceFile, response)
         response.get(200) match {
           case Some(Left(_)) =>
-            annotationsToAdd = findAllImplicitConversions(compiler, scu, sourceFile)
+              val (implicitAnns, macroAnns) = findAllImplicitConversions(compiler, scu, sourceFile)
+              implicitAnnotationsToAdd = implicitAnns
+              macroAnnotationsToAdd = macroAnns 
           case Some(Right(exc)) =>
             logger.error(exc)
           case None =>
@@ -133,7 +136,8 @@ class ImplicitHighlightingPresenter(sourceViewer: ISourceViewer) extends Semanti
         }
       }
 
-      AnnotationUtils.update(sourceViewer, ImplicitAnnotation.ID, annotationsToAdd)
+      AnnotationUtils.update(sourceViewer, ImplicitAnnotation.ID, implicitAnnotationsToAdd)
+      AnnotationUtils.update(sourceViewer, MacroExpansionAnnotation.ID, macroAnnotationsToAdd)
     }
   }
 }
@@ -189,18 +193,84 @@ object ImplicitHighlightingPresenter {
     }
     
     def mkMacroExpansionAttachment(t: Tree) = {
+      def printTree(t: Tree): String = {
+        val stringWriter = new java.io.StringWriter
+        val printWriter = new java.io.PrintWriter(stringWriter)
+        val prettySyntaxTreePrinter =  new PrettySyntaxTreePrinter(printWriter)
+        prettySyntaxTreePrinter.printTree(t)
+        stringWriter.getBuffer().toString()
+      }
       assert(t.attachments.get[compiler.MacroExpansionAttachment].isDefined)
       val Some(macroExpansionAttachment) = t.attachments.get[compiler.MacroExpansionAttachment]
       val originalTree = macroExpansionAttachment.original
       val txt = new String(sourceFile.content, originalTree.pos.startOrPoint, 
           math.max(0, originalTree.pos.endOrPoint - originalTree.pos.startOrPoint)).trim()
-      val expandedStr = t.toString
+      val expandedStr = printTree(t)
       val annotation = new MacroExpansionAnnotation("Macro expansion found: " + txt + DisplayStringSeparator + expandedStr)
       val pos = mkPosition(originalTree.pos, txt)
       (annotation, pos)
     }
+    
+    class PrettySyntaxTreePrinter(printer: java.io.PrintWriter) extends compiler.CompactTreePrinter(printer) {
+      import compiler._
+      var currentOwner: Symbol = NoSymbol
+      override def printTree(tree: Tree): Unit = tree match {
+        case Template(parents, self, body) =>
+          val currentOwner1 = currentOwner
+          if (tree.symbol != NoSymbol) currentOwner = tree.symbol.owner
+          parents match {
+            case List(parent) if parent.symbol == definitions.AnyRefClass => ()
+            case _ => printRow(parents, " with ")
+          }
+          if (!body.isEmpty) {
+            if (self.name != nme.WILDCARD) {
+              print(" { ", self.name); printOpt(": ", self.tpt); print(" => ")
+            } else if (!self.tpt.isEmpty) {
+              print(" { _ : ", self.tpt, " => ")
+            } else {
+              print(" {")
+            }
+            printColumn(body, "", ";", "}")
+          }
+          currentOwner = currentOwner1
+        case Select(rcv, nme.CONSTRUCTOR) => printTree(rcv)
+        case tree: DefDef if tree.symbol.isConstructor => ()
+        case tree: DefDef if tree.mods.isSynthetic => ()
+        case tree: ModuleDef if tree.mods.isSynthetic => ()
+        case ClassDef(mods, name, tparams, Template(parents, self, body)) =>
+          val isCaseClass = mods.isCase
+          printModifiers(tree, mods)
+          print("class", " ", symName(tree, name))
+          printTypeParams(tparams)
+          body foreach {
+            case d: ValDef => Predef.println(d.mods.isPublic -> d)
+            case _ => ()
+          }
+          val valdefs = body collect {
+            case d: ValDef if d.mods.isPublic && d.mods.isParamAccessor => d
+          }
+          val accessorDefs = body collect {
+            case d: DefDef if d.mods.isPublic && d.mods.isParamAccessor => d
+          }
+          def printAccessorAsConstructorValDef(d: DefDef): Unit = {
+            if (!isCaseClass) print("val ")
+            print(d.name, ": ", d.tpt)
+          }
+          print("(")
+          printSeq(accessorDefs)(printAccessorAsConstructorValDef _)(print(", "))
+          print(")")
+          //print(if (mods.isDeferred) " <: " else " extends ")
+        case _ =>
+          super.printTree(tree)
+      }
+
+      override def printRow(ts: List[Tree], start: String, sep: String, end: String) {
+    	  print(start); printSeq(ts){print(_)}{/*print(sep)*/}; print(end)
+      }
+    }
 
     var implicits = Map[Annotation, Position]()
+    var macroExpansions = Map[Annotation, Position]()
 
     new Traverser {
       override def traverse(t: Tree): Unit = {
@@ -213,13 +283,13 @@ object ImplicitHighlightingPresenter {
             implicits += (annotation -> pos)
           case v if v.attachments.get[compiler.MacroExpansionAttachment].isDefined =>
             val (annotation, pos) = mkMacroExpansionAttachment(v)
-            implicits += (annotation -> pos)
+            macroExpansions += (annotation -> pos)
           case _ =>
         }
         super.traverse(t)
       }
     }.traverse(compiler.loadedType(sourceFile).fold(identity, _ => compiler.EmptyTree))
 
-    implicits
+    (implicits, macroExpansions)
   }
 }
